@@ -81,7 +81,6 @@ ExtDef : Specifier ExtDecList SEMI {Node* p=NewNodeSyn("ExtDef",@$.first_line);$
     ;
 ExtDecList : VarDec {Node *p=NewNodeSyn("ExtDecList",@$.first_line); $$=MergeNode1(p,$1);}
     | VarDec COMMA ExtDecList {Node *p=NewNodeSyn("ExtDecList",@$.first_line); $$=MergeNode3(p,$1,$2,$3);}
-    | VarDec error { yyerrok; }
     ;
 
 /*-----------Specifier------------*/
@@ -104,41 +103,30 @@ VarDec : ID {Node *p=NewNodeSyn("VarDec",@$.first_line); $$=MergeNode1(p,$1);}
     ;
 FunDec : ID LP VarList RP {Node *p=NewNodeSyn("FunDec",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
     | ID LP RP {Node *p=NewNodeSyn("FunDec",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
-    | ID LP error { yyerror(ERR_RP); yyerrok; }
     | ID LP VarList error { yyerror(ERR_RP); yyerrok; }
-    | ID LP error RP { yyclearin; yyerrok; }
     ;
 VarList : ParamDec COMMA VarList {Node *p=NewNodeSyn("VarList",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | ParamDec {Node *p=NewNodeSyn("VarList",@$.first_line);$$=MergeNode1(p,$1);}
-    | ParamDec error { yyerror(ERR_SEMI" or "ERR_COMMA); yyerrok; }
     ;
 ParamDec : Specifier VarDec {Node *p=NewNodeSyn("ParamDec",@$.first_line);$$=MergeNode2(p,$1,$2);}
-    | Specifier VarDec error { yyerrok; }
     ;
 /*--------------Statements---------------*/
 CompSt : LC DefList StmtList RC {Node *p=NewNodeSyn("Compst",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
-    | LC DefList StmtList error { yyerror(ERR_RC); yyerrok; }
-    | LC error RC { yyclearin; yyerrok; }
-    | error RC { yyerror(ERR_LC); yyclearin; yyerrok; }
     ;
 StmtList : Stmt StmtList {Node *p=NewNodeSyn("StmtList",@$.first_line);$$=MergeNode2(p,$1,$2);}
     |{$$=NULL;} /*empty*/
     ;
 Stmt : Exp SEMI {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode2(p,$1,$2);}
-    | Exp error { yyerror(ERR_SEMI); yyerrok; }
+    | error RC { yyerror(ERR_LC); yyclearin; yyerrok; }
     | CompSt {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode1(p,$1);}
     | RETURN Exp SEMI {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | RETURN Exp error { yyerror(ERR_SEMI); yyerrok;}
-    | RETURN error SEMI { yyclearin; yyerrok; }
     | IF LP Exp RP Stmt %prec LOWER_THAN_ELSE {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode5(p,$1,$2,$3,$4,$5);}
     | IF LP Exp RP Stmt ELSE Stmt {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode7(p,$1,$2,$3,$4,$5,$6,$7);}
     | IF LP Exp error Stmt ELSE Stmt{ yyerror(ERR_RP); yyerrok;}
-    | IF LP Exp RP error ELSE Stmt  { yyerrok; }
-    | IF LP Exp RP Stmt ELSE error  { yyerror(ERR_SEMI" or \"}\""); yyerrok; }
     | WHILE LP Exp RP Stmt {Node *p=NewNodeSyn("Stmt",@$.first_line);$$=MergeNode5(p,$1,$2,$3,$4,$5);}
     | WHILE LP Exp error Stmt { yyerror(ERR_RP); yyerrok; }
-    | WHILE LP Exp RP error { yyerror(ERR_SEMI" or \"}\""); yyerrok;}
-    | error SEMI {$$ = NewNodeSyn("error",@$.first_line); yyerror(ERR_SEMI); yyclearin; yyerrok; }
+    | error SEMI {$$ = NewNodeSyn("error",@$.first_line); yyerror(ERR_SEMI); yyclearin; }
     ;
 /*--------Local Definitions----------*/
 DefList : Def DefList {Node *p=NewNodeSyn("DefList",@$.first_line);$$=MergeNode2(p,$1,$2);}
@@ -150,11 +138,12 @@ Def : Specifier DecList SEMI {Node *p=NewNodeSyn("Def",@$.first_line);$$=MergeNo
     ;
 DecList :Dec  {Node *p=NewNodeSyn("DecList",@$.first_line);$$=MergeNode1(p,$1);}
     | Dec COMMA DecList {Node *p=NewNodeSyn("DecList",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
-    | Dec error { yyerror(ERR_SEMI" or "ERR_COMMA); yyclearin; yyerrok; }
+    | Dec error { yyerror(ERR_SEMI); yyclearin; yyerrok; }
     ;
 Dec : VarDec {Node *p=NewNodeSyn("Dec",@$.first_line);$$ =MergeNode1(p,$1);}
     | VarDec ASSIGNOP Exp  {Node *p=NewNodeSyn("Dec",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
-    | VarDec ASSIGNOP error { yyclearin; yyerrok; }
+    | LB error ASSIGNOP {yyerror(ERR_RB); yyclearin; yyerrok; }
+    | VarDec ASSIGNOP error SEMI{ yyerror("Missing operation numbers."); yyclearin; yyerrok; }
     ;
 /*----------Expressions---------------*/
 Exp : Exp ASSIGNOP Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
@@ -166,15 +155,12 @@ Exp : Exp ASSIGNOP Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,
     | Exp STAR Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | Exp DIV Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | LP Exp RP  {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
-    | LP Exp error { yyerror(ERR_RP); }
     | MINUS Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode2(p,$1,$2);}
     | NOT Exp {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode2(p,$1,$2);}
     | ID LP Args RP {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
-    | ID LP Args error RP { yyerror("Bad format of args in '('."); yyclearin; yyerrok;}
     | ID LP RP {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | ID LP error { yyerror(ERR_RP); yyclearin; }
     | Exp LB Exp RB  {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
-    | Exp LB Args RB {yyerror(ERR_RB);}
     | Exp DOT ID {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
     | ID {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode1(p,$1);}
     | INT {Node *p=NewNodeSyn("Exp",@$.first_line);$$=MergeNode1(p,$1);}
