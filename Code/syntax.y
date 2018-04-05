@@ -24,12 +24,12 @@ extern int errorCount;
 
 Node *root;
 Node *NewNodeSyn(char *,int);
-Node *MergeNode1(Node*,Node*);
-Node *MergeNode2(Node*,Node*,Node*);
-Node *MergeNode3(Node*,Node*,Node*,Node*);
-Node *MergeNode4(Node*, Node*,Node*,Node*,Node*);
-Node *MergeNode5(Node*, Node*,Node*,Node*,Node*,Node*);
-Node *MergeNode7(Node*, Node*,Node*,Node*,Node*,Node*,Node* ,Node*);
+Node *MergeNode1(Node*,Node*);  //1 child
+Node *MergeNode2(Node*,Node*,Node*); //2 child
+Node *MergeNode3(Node*,Node*,Node*,Node*); //3 child
+Node *MergeNode4(Node*, Node*,Node*,Node*,Node*); //4 child
+Node *MergeNode5(Node*, Node*,Node*,Node*,Node*,Node*); //5 child
+Node *MergeNode7(Node*, Node*,Node*,Node*,Node*,Node*,Node* ,Node*);//6 child
 
 %}
 /*---declared type---*/
