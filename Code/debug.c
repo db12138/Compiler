@@ -1,10 +1,10 @@
-#include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
-void Assert(char *log)
+void Assert(char *log,char *file,int line)
 {
-	fprintf(stderr,"\033[31m%s  ",log);
-	assert(0);
-	fprintf(stderr,"\033[0m");
+	fprintf(stderr,"\033[31m%s AT FILE:%s LINE:%d\n \033[0m",log,file,line);
+	abort();
+	//fprintf(stderr,"\033[0m");
 }
 /*int main()
 {

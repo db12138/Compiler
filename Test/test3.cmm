@@ -1,4 +1,4 @@
-int inc() {
- int i;
+int inc(int argc ,int n) {
+ int i[8];
  i = i + 1;
 }

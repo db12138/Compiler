@@ -18,21 +18,21 @@ typedef struct Type_
 typedef struct FieldList_
 {
 	char* name;
-	Type type;
+	Type_ type;
 	FieldList tail;
 }FieldList_;
 
-typedef struct Vtable
+typedef struct Vtype
 {
 	Type_ type;
 	char name[100];
-}Vtable;
+}Vtype;
 
-typedef struct Ftable
+typedef struct Ftype
 {
 	Type_ retn;    //the type of return
 	int paranum;   //the number of parameters 
 	Type_ paralist[30]; //the most number of parameters is 30;
-}Ftable;
+}Ftype;
 
 #endif

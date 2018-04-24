@@ -5,10 +5,17 @@ extern FILE *yyin;
 extern Node *Root;
 BOOL hasError = FALSE;
 int errorCount = 0;
+
 void DisplayTree(Node *head,int n);
+int yyparse(void);
+void Program(Node *);
+void displaySymbolTable();
+void initTable();
 int main(int argc,char **argv)
 {
 	Root = NULL;
+	initTable();
+
 	if(argc > 1)
 	{
 		if(!(yyin=fopen(argv[1],"r")))
@@ -23,7 +30,9 @@ int main(int argc,char **argv)
 	if(!hasError)
 	{
 	  DisplayTree(Root,0);
-	  //SemanticAnalysis(root);
+
+	  Program(Root);
+	  displaySymbolTable();
 	}
 	
 	return 0;

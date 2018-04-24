@@ -1,9 +1,12 @@
 #include "semantic.h"
+#include "debug.h"
+#include <stdio.h>
+extern Vtype vartable[];
+extern Ftype funtalbe[];
 
-extern Vtable vartable[10000];
-extern Ftable funtalbe[1000]
+int addVar(Vtype);
 
-void Assert(char *);
+
 
 void Program(Node *);
 void ExtDefList(Node *);
@@ -13,6 +16,10 @@ void FunDec(Node *);
 void CompSt(Node *);
 void DefList(Node *);
 void Def(Node *);
+void DecList(Node *);
+void Dec(Node *);
+void VarDec(Node *);
+
 
 void Program(Node *root)
 {
@@ -28,6 +35,7 @@ void ExtDefList(Node *root)
 		return;
 	
 	ExtDef(root->child[0]);
+
 	ExtDefList(root->child[1]);
 }
 
@@ -38,6 +46,7 @@ void ExtDef(Node *root)
 	if(strcmp(root->child[1]->strval,"FunDec") == 0)
 	{
 		Specifier(root->child[0]);
+		
 		FunDec(root->child[1]);
 		CompSt(root->child[2]);
 	}
@@ -47,7 +56,7 @@ void Specifier(Node *root)
 {
 	if(root == NULL)
 		return;
-	if(strcmp(root->child[0]->strval,"TYPE"))
+	if(strcmp(root->child[0]->strval,"TYPE")== 0)
 	{
 		root->inhtype.kind = BASIC; 
 		if(strcmp(root->child[0]->idval,"int") == 0)
@@ -61,7 +70,7 @@ void Specifier(Node *root)
 	}
 	else
 	{
-		Assert("specifier struct");		
+		Assert("specifier struct",__FILE__,__LINE__);		
 	}
 
 }
@@ -82,15 +91,17 @@ void DefList(Node *root)
 		return;
 	
 	Def(root->child[0]);
+
 	DefList(root->child[1]);
+
 }
 void Def(Node *root)
 {
 	if(root == NULL)
 		return;
 	Specifier(root->child[0]);
-	cld1 = root->child[0];
-	cld2 = root->child[1];
+	Node *cld1 = root->child[0];
+	Node *cld2 = root->child[1];
 
 	cld2->inhtype = cld1->inhtype;
 	DecList(root->child[1]);
@@ -99,10 +110,52 @@ void DecList(Node *root)
 {
 	if(root == NULL)
 		return;
-	
-
+	root->child[0]->inhtype = root->inhtype;
+	Dec(root->child[0]);
+	if(root->childnum==3)
+	{
+		Assert("sth need todo",__FILE__,__LINE__);
+		//DecList(root->child[2]);
+	}
 }
+void Dec(Node *root)
+{
+	if(root == NULL)
+		return ;
+	
+	root->child[0]->inhtype = root->inhtype;
 
+	if(root -> childnum == 3 )
+	{
+		Assert("sth need todo",__FILE__,__LINE__);
+	}
+	else if(root -> childnum == 1)
+	{
+		VarDec(root->child[0]);
+	}
+	else
+	{
+		Assert("should not reach",__FILE__,__LINE__);
+	}
+}
+void VarDec(Node *root)
+{
+	if(root == NULL)
+		return ;
+	
+	if(root->childnum == 1) //child is a ID
+	{
+		//add to symboltable;
+		Vtype temp;
+		temp.type = root->inhtype;
+		strcpy(temp.name,root->child[0]->idval);
+		addVar(temp);
+	}
+	else
+	{
+		Assert("sth need todo",__FILE__,__LINE__);
+	}
+}
 
 
 
