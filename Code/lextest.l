@@ -81,7 +81,7 @@ YYLTYPE yylloc;
 
 delim 		[ \t]
 letter		[A-Za-z]
-digit		[1-9]
+digit		[0-9]
 relop		">"|"<"|">="|"<="|"=="|"!="
 int     	(0|[1-9]({digit}|{letter})*|0({digit}|{letter})+|0[Xx]({digit}|{letter})+)
 id 		[_a-zA-Z][_a-zA-Z0-9]*
@@ -92,6 +92,7 @@ float 		([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)([Ee][+-]?[0-9]+)?
 
 {delim}+ 			{/*empty*/}
 {int}	 			{int temp = s2i(yytext); 
+//				 printf("%s, %d.\n", yytext, temp);
 				 if(hasError && temp == -1) {
 				  yylval.type_node = NewNodeId("ID", yytext); return ID;
 				 } else {
