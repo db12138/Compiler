@@ -22,7 +22,7 @@
 extern BOOL hasError;
 extern int errorCount;
 
-Node *root;
+Node *Root;
 Node *NewNodeSyn(char *,int);
 Node *MergeNode1(Node*,Node*);  //1 child
 Node *MergeNode2(Node*,Node*,Node*); //2 child
@@ -64,7 +64,7 @@ Node *MergeNode7(Node*, Node*,Node*,Node*,Node*,Node*,Node* ,Node*);//6 child
 %nonassoc ELSE
 
 %%
-Program : ExtDefList {Node* p=NewNodeSyn("Program",@$.first_line);$$=MergeNode1(p,$1);root=$$;}
+Program : ExtDefList {Node* p=NewNodeSyn("Program",@$.first_line);$$=MergeNode1(p,$1);Root=$$;}
     ;
 ExtDefList : ExtDef ExtDefList {Node *p=NewNodeSyn("ExtDefList",@$.first_line); $$=MergeNode2(p,$1,$2);}
     |{$$=NULL;}

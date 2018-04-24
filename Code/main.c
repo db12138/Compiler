@@ -2,12 +2,13 @@
 #include "lex.yy.c"
 #include "common.h"
 extern FILE *yyin;
-extern Node *root;
+extern Node *Root;
 BOOL hasError = FALSE;
 int errorCount = 0;
 void DisplayTree(Node *head,int n);
 int main(int argc,char **argv)
 {
+	Root = NULL;
 	if(argc > 1)
 	{
 		if(!(yyin=fopen(argv[1],"r")))
@@ -20,7 +21,11 @@ int main(int argc,char **argv)
 	yyrestart(yyin);
 	yyparse();
 	if(!hasError)
-	  DisplayTree(root,0);
+	{
+	  DisplayTree(Root,0);
+	  //SemanticAnalysis(root);
+	}
+	
 	return 0;
 }
 

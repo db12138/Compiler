@@ -49,72 +49,48 @@ Node *NewNodeId(char *nodename,char *idname)
 }
 Node* MergeNode1(Node *father ,Node* child)
 {
-	if(child!=NULL)
-	{
-		father->child[father->childnum] = child;
-		father->childnum++;
-	}
+	father->child[father->childnum] = child;
+	father->childnum++;
 	return father;
 }
 Node *MergeNode2(Node *father,Node *child1,Node* child2)
 {
-	if(child1 != NULL)
 		father->child[father->childnum++]=child1;
-	if(child2 != NULL)
 		father->child[father->childnum++]=child2;
 	return father;
 }
 Node *MergeNode3(Node *father,Node *child1,Node* child2,Node* child3)
 {
-	if(child1 != NULL)
 		father->child[father->childnum++]=child1;
-	if(child2 != NULL)
 		father->child[father->childnum++]=child2;
-	if(child3 != NULL)
 		father->child[father->childnum++]=child3;
 	return father;
 }
 Node *MergeNode4(Node* father,Node *c1,Node* c2,Node* c3,Node* c4)
 {
-	if(c1 != NULL)
 		father->child[father->childnum++] = c1;
-	if(c2 != NULL)
 		father->child[father->childnum++] = c2;
-	if(c3 != NULL)
 		father->child[father->childnum++] = c3;
-	if(c4 != NULL)
 		father->child[father->childnum++] = c4;
 	return father;
 }
 Node *MergeNode5(Node* father,Node *c1,Node* c2,Node* c3,Node* c4,Node *c5)
 {
-	if(c1 != NULL)
 		father->child[father->childnum++] = c1;
-	if(c2 != NULL)
 		father->child[father->childnum++] = c2;
-	if(c3 != NULL)
 		father->child[father->childnum++] = c3;
-	if(c4 != NULL)
 		father->child[father->childnum++] = c4;
-	if(c5 != NULL)
 		father->child[father->childnum++] = c5;
 	return father;
 }
 Node *MergeNode7(Node* father,Node *c1,Node* c2,Node* c3,Node* c4,Node *c5,Node* c6,Node* c7)
 {
-	if(c1 != NULL)
 		father->child[father->childnum++] = c1;
-	if(c2 != NULL)
 		father->child[father->childnum++] = c2;
-	if(c3 != NULL)
 		father->child[father->childnum++] = c3;
-	if(c4 != NULL)
 		father->child[father->childnum++] = c4;
-	if(c5 != NULL)
 		father->child[father->childnum++] = c5;
-	if(c6 != NULL)
 		father->child[father->childnum++] = c6;
-	if(c7 != NULL)
 		father->child[father->childnum++] = c7;
 	return father;
 }
@@ -128,6 +104,8 @@ int PrintTab(int num)
 }
 void DisplayTree(Node *head,int n)
 {
+	if(head == NULL)
+		return ;
 	int i=0;
 	PrintTab(n);
 	switch (head->type)
