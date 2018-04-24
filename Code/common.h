@@ -1,6 +1,8 @@
 #pragma once
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
+#include "symbolTable.h"
 typedef struct Node
 {
 	int type; //0 terminal 1 noterminal 2 int 3 float 4 Id
@@ -10,6 +12,10 @@ typedef struct Node
 	char idval[50];
 	char strval[50];
 	int childnum;
+
+	Type_ inhtype;
+	Type_ syntype;
+
 	struct Node * child[100];
 }Node;
 
