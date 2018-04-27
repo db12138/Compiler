@@ -18,6 +18,18 @@ int addVar(Vtype var)
 	//fprintf(stderr,"why");
 	return 0;
 }
+int checkVar(char *varname)
+{
+	int i=0;
+	for(;i<varnum;i++)
+	{
+		if(strcmp(vartable[i].name,varname) == 0)
+		{
+			return 1; //var in the table
+		}
+	}
+	return 0; //not in
+}
 
 int displaySymbolTable()
 {

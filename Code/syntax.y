@@ -111,7 +111,7 @@ VarList : ParamDec COMMA VarList {Node *p=NewNodeSyn("VarList",@$.first_line);$$
 ParamDec : Specifier VarDec {Node *p=NewNodeSyn("ParamDec",@$.first_line);$$=MergeNode2(p,$1,$2);}
     ;
 /*--------------Statements---------------*/
-CompSt : LC DefList StmtList RC {Node *p=NewNodeSyn("Compst",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
+CompSt : LC DefList StmtList RC {Node *p=NewNodeSyn("CompSt",@$.first_line);$$=MergeNode4(p,$1,$2,$3,$4);}
     | LC CompSt error { yyerror("Wrong end here."); }
     ;
 StmtList : Stmt StmtList {Node *p=NewNodeSyn("StmtList",@$.first_line);$$=MergeNode2(p,$1,$2);}

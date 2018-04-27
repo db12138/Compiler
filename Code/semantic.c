@@ -5,7 +5,7 @@ extern Vtype vartable[];
 extern Ftype funtalbe[];
 
 int addVar(Vtype);
-
+int checkVar(char *);
 
 
 void Program(Node *);
@@ -19,7 +19,9 @@ void Def(Node *);
 void DecList(Node *);
 void Dec(Node *);
 void VarDec(Node *);
-
+void StmtList(Node *);
+void Stmt(Node *);
+void Exp(Node *);
 
 void Program(Node *root)
 {
@@ -75,16 +77,105 @@ void Specifier(Node *root)
 
 }
 void FunDec(Node *root)
-{}
+{
+	
+}
 void CompSt(Node *root)
 {
 	if(root == NULL)
 		return;
 	
 	DefList(root->child[1]);
-
+	StmtList(root->child[2]);
 }
 
+void StmtList(Node *root)
+{
+	if(root == NULL)
+		return;
+	Stmt(root->child[0]);
+	StmtList(root->child[1]);
+}
+void Stmt(Node *root)
+{	
+	if(root == NULL)
+		return;
+	
+	if(root->childnum == 1)
+	{
+		//ComSt
+		Assert("TODO",__FILE__,__LINE__);
+	}
+	else if(root->childnum == 2)
+	{
+		Exp(root->child[0]);
+	}
+	else
+	{
+		Assert("TODE",__FILE__,__LINE__);
+	}
+}
+void Exp(Node *root)
+{
+	if(root == NULL)
+		return;
+	if(root->childnum == 1)
+	{
+		fprintf(stderr,"123");
+		if(strcmp(root->child[0]->strval,"ID") == 0)
+		{
+			char *varname = root->child[0]->idval;
+			if(checkVar(varname) == 0)
+			{
+				fprintf(stderr,"Error type 1 at Line %d :Undefined variable \"%s\"",root->child[0]->linenum,root->child[0]->idval);
+			}
+		}
+		else if(strcmp(root->child[0]->strval,"INT") == 0)
+		{
+			Assert("sth need todo ",__FILE__,__LINE__);
+		}
+		else if(strcmp(root->child[0]->strval,"FLOAT") == 0)
+		{
+			Assert("sth need todo ",__FILE__,__LINE__);
+		}
+		else
+		{
+			Assert("should not reach",__FILE__,__LINE__);
+		}
+	}
+	else if(root->childnum == 3)
+	{
+		if(strcmp(root->child[0]->strval,"Exp") ==0 )
+		{
+			Exp(root->child[0]);
+			if(strcmp(root->child[1]->strval,"DOT")==0)
+			{
+				Exp(root->child[2]);
+			}
+		}
+		else if(strcmp(root->child[0]->strval,"LP") == 0)
+		{
+			Exp(root->child[1]);
+		}
+		else if(strcmp(root->child[0]->strval,"ID") == 0)
+		{
+			//Exp -> ID LP RP
+			Assert("sth need todo ",__FILE__,__LINE__);
+		}
+	}
+	else if(root->childnum == 2)
+	{
+			Assert("sth need todo ",__FILE__,__LINE__);
+	}
+	else if(root->childnum == 4)
+	{
+			Assert("sth need todo ",__FILE__,__LINE__);
+	}
+	else
+	{
+		Assert("should not reach",__FILE__,__LINE__);
+	}
+}
 void DefList(Node *root)
 {
 	if(root == NULL)
