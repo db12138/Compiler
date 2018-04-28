@@ -2,5 +2,5 @@ int main()
 {
 	int i;
 	j = j+1;
-	inc(i);
+	inc();
 }

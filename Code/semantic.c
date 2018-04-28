@@ -6,11 +6,13 @@ extern Ftype funtalbe[];
 
 int addVar(Vtype);
 int checkVar(char *);
-
+int addFun(Ftype);
+int checkFun(char *);
 
 void Program(Node *);
 void ExtDefList(Node *);
 void ExtDef(Node *);
+void ExtDecList(Node *);
 void Specifier(Node *);
 void FunDec(Node *);
 void CompSt(Node *);
@@ -41,6 +43,11 @@ void ExtDefList(Node *root)
 	ExtDefList(root->child[1]);
 }
 
+void ExtDecList(Node *root)
+{
+	if(root == NULL)
+		return;
+}
 void ExtDef(Node *root)
 {
 	if(root == NULL)
@@ -48,11 +55,24 @@ void ExtDef(Node *root)
 	if(strcmp(root->child[1]->strval,"FunDec") == 0)
 	{
 		Specifier(root->child[0]);
-		
+		root->child[1]->inhtype = root->child[0]->inhtype;
+
 		FunDec(root->child[1]);
 		CompSt(root->child[2]);
 	}
-
+	else if(strcmp(root->child[1]->strval,"SEMI") == 0)
+	{
+		Specifier(root->child[0]);
+	}
+	else if(strcmp(root->child[1]->strval,"ExtDecList") == 0)
+	{
+		Specifier(root->child[0]);
+		ExtDecList(root->child[1]);
+	}
+	else
+	{
+		Assert("Should not reach",__FILE__,__LINE__);
+	}
 }
 void Specifier(Node *root)
 {
@@ -78,7 +98,26 @@ void Specifier(Node *root)
 }
 void FunDec(Node *root)
 {
+	if(root == NULL)
+		return;
 	
+	if(root->childnum == 4)
+	{
+		
+	}
+	else if(root->childnum == 3)
+	{
+		//ID LP RP
+		Ftype newfun;
+		strcpy(newfun.name,root->child[0]->idval);
+		newfun.retn = root->inhtype;
+		newfun.paranum = 0;
+		addFun(newfun);
+	}
+	else
+	{
+		Assert("Should not reach",__FILE__,__LINE__);
+	}
 }
 void CompSt(Node *root)
 {
@@ -121,13 +160,12 @@ void Exp(Node *root)
 		return;
 	if(root->childnum == 1)
 	{
-		fprintf(stderr,"123");
 		if(strcmp(root->child[0]->strval,"ID") == 0)
 		{
 			char *varname = root->child[0]->idval;
 			if(checkVar(varname) == 0)
 			{
-				fprintf(stderr,"Error type 1 at Line %d :Undefined variable \"%s\"",root->child[0]->linenum,root->child[0]->idval);
+				fprintf(stderr,"Error type 1 at Line %d :Undefined variable \"%s\"\n",root->child[0]->linenum,root->child[0]->idval);
 			}
 		}
 		else if(strcmp(root->child[0]->strval,"INT") == 0)
@@ -160,7 +198,11 @@ void Exp(Node *root)
 		else if(strcmp(root->child[0]->strval,"ID") == 0)
 		{
 			//Exp -> ID LP RP
-			Assert("sth need todo ",__FILE__,__LINE__);
+			if(checkFun(root->child[0]->idval) == 0 )
+			{
+				fprintf(stderr,"Error type 2 at Line %d: Undefined function \"%s\"\n.",root->child[0]->linenum,root->child[0]->idval);
+			}
+			//Assert("sth need todo ",__FILE__,__LINE__);
 		}
 	}
 	else if(root->childnum == 2)
@@ -169,7 +211,7 @@ void Exp(Node *root)
 	}
 	else if(root->childnum == 4)
 	{
-			Assert("sth need todo ",__FILE__,__LINE__);
+			//Assert("sth need todo ",__FILE__,__LINE__);
 	}
 	else
 	{
