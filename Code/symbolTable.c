@@ -16,6 +16,30 @@ void initTable()
 	funnum = 0;
 	structnum = 0;
 }
+Type_ getStructType(char *name)
+{
+	int i=0;
+	for(;i<structnum;i++)
+	{
+		if(strcmp(structtable[i].structname,name) == 0)
+			return structtable[i].structtype;
+	}
+	Assert("should not reach",__FILE__,__LINE__);
+	Type_ init;
+	return init;
+}
+int checkStruct(char *name)
+{
+	int i=0;
+	for(;i<structnum;i++)
+	{
+		if(strcmp(structtable[i].structname,name) == 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
 int addStruct(Stype s)
 {
 	structtable[structnum++] = s;
@@ -26,6 +50,36 @@ int addFun(Ftype fun)
 	funtable[funnum++] = fun;
 	return 0;
 }
+
+int checkRedefine(char *name)
+{
+	int i=0;
+	for(;i<varnum;i++)
+	{
+		if(strcmp(vartable[i].name,name) == 0)
+		{
+			return 1;
+		}
+	}
+	i=0;
+	for(;i<structnum;i++)
+	{
+		if(strcmp(structtable[i].structname,name) == 0)
+		{
+			return 1;
+		}
+	}
+	i=0;
+	for(;i<funnum;i++)
+	{
+		if(strcmp(funtable[i].name,name) == 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int checkFun(char *funname)
 {
 	int i=0;
@@ -41,8 +95,8 @@ int checkFun(char *funname)
 int addVar(Vtype var)
 {
 	vartable[varnum++]=var;
-	//printf("varnum:%d\n",varnum);
-	//fprintf(stderr,"why");
+	//fprintf(stderr,"varnum:%d\n",varnum);
+	//ffprintf(stderr,stderr,"why");
 	return 0;
 }
 Type checkVar(char *varname)
@@ -63,7 +117,7 @@ void displayFieldList(FieldList f)
 	if(f == NULL)
 		return;
 	displayType(*(f->type));
-	printf("  %s\n",f->name);
+	fprintf(stderr,"%s    ",f->name);
 	displayFieldList(f->tail);
 }
 void displayType(Type_ var)
@@ -73,23 +127,23 @@ void displayType(Type_ var)
 	{
 		if(var.u.basic == 1)
 		{
-			printf("int    ");
+			fprintf(stderr,"int  ");
 		}
 		else
 		{
-			printf("float  ");
+			fprintf(stderr,"float  ");
 		}
 	}
 	else if(var.kind == ARRAY)
 	{
-		printf("[%d]",var.u.array.size);
+		fprintf(stderr,"[%d]",var.u.array.size);
 		displayType(*var.u.array.elem);
 	}
 	else if(var.kind == STRUCTURE)
 	{
-		printf("{\n");
+		fprintf(stderr,"{\n");
 		displayFieldList(var.u.structure);
-		printf("};\n");
+		fprintf(stderr,"};\n");
 	}
 	else
 	{
@@ -102,26 +156,28 @@ void displayStructTable()
 	int i=0;
 	for(;i<structnum;i++)
 	{
-		printf("STRUCT %s",structtable[i].structname);
+		fprintf(stderr,"STRUCT %s",structtable[i].structname);
 		displayType(structtable[i].structtype);
 	}
 }
 int displaySymbolTable()
 {
 	int i=0;
-	printf("symbolTable:\n");
-	printf("  vartable:\n");
+	fprintf(stderr,"symbolTable:\n");
+	fprintf(stderr,"  vartable:\n");
 	for(;i<varnum;i++)
 	{
 		displayType(*vartable[i].type);
-		printf("%s\n",vartable[i].name);
+		fprintf(stderr,"%s\n",vartable[i].name);
 	}
-	printf("  funtable:\n");
+	fprintf(stderr,"  funtable:\n");
 	for(i=0;i<funnum;i++)
 	{
 		displayType(funtable[i].retn);
-		printf("paralistnum:%d  ",funtable[i].paranum);
-		printf("name:%s\n",funtable[i].name);
+		fprintf(stderr,"name:%s  ",funtable[i].name);
+		fprintf(stderr,"paralistnum:%d  ",funtable[i].paranum);
+		displayFieldList(funtable[i].paralist);
+		fprintf(stderr,"\n");
 	}
 	displayStructTable();
 	return 0;

@@ -33,7 +33,7 @@ typedef struct Ftype
 	char name[100];
 	Type_ retn;    //the type of return
 	int paranum;   //the number of parameters 
-	Type_ paralist[80]; //the most number of parameters is 30;
+	FieldList paralist; //the most number of parameters is 30;
 }Ftype;
 typedef struct Stype
 {

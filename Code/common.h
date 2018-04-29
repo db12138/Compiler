@@ -16,6 +16,7 @@ typedef struct Node
 
 	Type_ inhtype;
 	Type_ syntype;
+	int hasReturn;
 
 	struct Node * child[100];
 }Node;

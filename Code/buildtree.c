@@ -9,6 +9,8 @@ Node * NewNode(char *nodename,int ln)
 	p->childnum=0;
 	p->type = 0;
 	p->linenum = ln;
+
+	p->hasReturn = 0;
 	strcpy(p->strval,nodename);
 	return p;
 }
@@ -18,6 +20,7 @@ Node * NewNodeSyn(char *nodename,int linenum)
 	p->childnum=0;
 	p->type = 1;
 	p->linenum = linenum;
+	p->hasReturn = 0;
 	strcpy(p->strval,nodename);
 	return p;
 }
@@ -28,6 +31,7 @@ Node *NewNodeInt(int value,int ln)
 	p->linenum = ln;
 	strcpy(p->strval,"INT");
 	p->type = 2;
+	p->hasReturn = 0;
 	p->intval = value;
 	return p;
 }
@@ -38,6 +42,7 @@ Node *NewNodeFloat(float value,int ln)
 	p->type = 3;
 	p->linenum = ln;
 	p->floatval = value;
+	p->hasReturn = 0;
 	strcpy(p->strval,"FLOAT");
 	return p;
 }
@@ -48,6 +53,7 @@ Node *NewNodeId(char *nodename,char *idname,int ln)
 	p->linenum = ln;
 	strcpy(p->strval,nodename);
 	p->type = 4;
+	p->hasReturn = 0;
 	strcpy(p->idval,idname);
 //	fprintf(stderr,"%s  %d",p->idval,p->linenum);
 	return p;
