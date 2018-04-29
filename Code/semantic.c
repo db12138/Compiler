@@ -4,8 +4,10 @@
 extern Vtype vartable[];
 extern Ftype funtalbe[];
 
+void errorPrint(int ,int ,char *); 
+int addStruct(Stype);
 int addVar(Vtype);
-int checkVar(char *);
+Type checkVar(char *);
 int addFun(Ftype);
 int checkFun(char *);
 
@@ -20,10 +22,16 @@ void DefList(Node *);
 void Def(Node *);
 void DecList(Node *);
 void Dec(Node *);
-void VarDec(Node *);
+Vtype VarDec(Node *);
 void StmtList(Node *);
 void Stmt(Node *);
 void Exp(Node *);
+
+void StructSpecifier(Node *);
+FieldList DefStruct(Node *);
+FieldList DefListStruct(Node *);
+FieldList DecListStruct(Node *);
+FieldList DecStruct(Node *);
 
 void Program(Node *root)
 {
@@ -47,6 +55,17 @@ void ExtDecList(Node *root)
 {
 	if(root == NULL)
 		return;
+	
+	if(root->childnum == 1)
+	{
+		root->child[0]->inhtype = root->inhtype;
+		Vtype newVar = VarDec(root->child[0]);
+		addVar(newVar);
+	}
+	else
+	{
+		Assert("std need TODO",__FILE__,__LINE__);
+	}
 }
 void ExtDef(Node *root)
 {
@@ -67,12 +86,125 @@ void ExtDef(Node *root)
 	else if(strcmp(root->child[1]->strval,"ExtDecList") == 0)
 	{
 		Specifier(root->child[0]);
+		root->child[1]->inhtype = root->child[0]->inhtype;
 		ExtDecList(root->child[1]);
 	}
 	else
 	{
 		Assert("Should not reach",__FILE__,__LINE__);
 	}
+}
+FieldList DefListStruct(Node *root)
+{
+	if(root == NULL)
+	{
+		return NULL;
+	}
+	FieldList head = DefStruct(root->child[0]);
+	if(head == NULL)
+	{
+		Assert("should not happen",__FILE__,__LINE__);
+	}
+	else
+	{
+		head->tail = DefListStruct(root->child[1]);
+	}
+	return head;
+
+}
+FieldList DefStruct(Node *root)
+{
+	if(root == NULL)
+	{
+		return NULL;
+	}
+	Specifier(root->child[0]);
+	root->child[1]->inhtype = root->child[0]->inhtype;
+	
+	FieldList head = DecListStruct(root->child[1]);
+	return head;
+
+}
+FieldList DecListStruct(Node *root)
+{
+	if(root == NULL)
+	{
+		return NULL;
+	}
+	FieldList head = NULL;
+	if(root->childnum == 1)
+	{
+		//Dec
+		root->child[0]->inhtype = root->inhtype;
+		head = DecStruct(root->child[0]);
+	}
+	else if(root->childnum == 3)
+	{
+		//Dec comma DecList
+		
+		root->child[0]->inhtype = root->inhtype;
+		root->child[2]->inhtype = root->inhtype;
+
+		head = DecStruct(root->child[0]);
+		head->tail = DecListStruct(root->child[2]);
+		//Assert("sth need TODO",__FILE__,__LINE__);
+	}
+	return head;
+}
+FieldList DecStruct(Node *root)
+{
+	if(root == NULL)
+		return NULL;
+	
+	if(root->childnum == 1)
+	{
+		//VarDec
+		root->child[0]->inhtype = root->inhtype;
+		Vtype temp = VarDec(root->child[0]);
+
+		FieldList head = (FieldList)malloc(sizeof(struct FieldList_));
+		strcpy(head->name,temp.name);
+		head->type = temp.type;
+		head->tail = NULL;
+	}
+	else
+	{
+		//VarDec ASSIGNOP EXP
+		Assert("sth need TODO",__FILE__,__LINE__);
+	}
+}
+void StructSpecifier(Node *root)
+{
+	if(root == NULL)
+		return;
+	//fprintf(stderr,"childnum: %d",root->childnum);
+	if(root->childnum == 2)
+	{
+		//struct tag
+		Assert("sth need TODO",__FILE__,__LINE__);
+
+	}
+	else if(root->childnum ==5)
+	{
+		if(root->child[1] == NULL)
+		{
+			//OptTag == NULL;
+			return;
+		}
+		else
+		{
+			//fprintf(stderr,"test1");
+			Stype newSt;
+			Node *opt = root->child[1];
+			strcpy(newSt.structname,opt->child[0]->idval);
+
+			newSt.structtype.kind =STRUCTURE;
+			newSt.structtype.u.structure = DefListStruct(root->child[3]);
+			addStruct(newSt);//add new struct type;
+		}
+	}
+	
+
 }
 void Specifier(Node *root)
 {
@@ -92,7 +224,8 @@ void Specifier(Node *root)
 	}
 	else
 	{
-		Assert("specifier struct",__FILE__,__LINE__);		
+		StructSpecifier(root->child[0]);
+		//Assert("specifier struct",__FILE__,__LINE__);		
 	}
 
 }
@@ -163,18 +296,28 @@ void Exp(Node *root)
 		if(strcmp(root->child[0]->strval,"ID") == 0)
 		{
 			char *varname = root->child[0]->idval;
-			if(checkVar(varname) == 0)
+			Type vartype = checkVar(varname);
+			if(vartype == NULL)
 			{
-				fprintf(stderr,"Error type 1 at Line %d :Undefined variable \"%s\"\n",root->child[0]->linenum,root->child[0]->idval);
+				//fprintf(stderr,"Error type 1 at Line %d :Undefined variable \"%s\"\n",root->child[0]->linenum,root->child[0]->idval);
+				errorPrint(1,root->linenum,root->child[0]->idval);
+			}
+			else
+			{
+				root->inhtype = *vartype;
 			}
 		}
 		else if(strcmp(root->child[0]->strval,"INT") == 0)
 		{
-			Assert("sth need todo ",__FILE__,__LINE__);
+			root->inhtype.kind = BASIC;
+			root->inhtype.u.basic = 1;
+			//Assert("sth need todo ",__FILE__,__LINE__);
 		}
 		else if(strcmp(root->child[0]->strval,"FLOAT") == 0)
 		{
-			Assert("sth need todo ",__FILE__,__LINE__);
+			root->inhtype.kind=BASIC;
+			root->inhtype.u.basic = 2;
+			//Assert("sth need todo ",__FILE__,__LINE__);
 		}
 		else
 		{
@@ -200,7 +343,7 @@ void Exp(Node *root)
 			//Exp -> ID LP RP
 			if(checkFun(root->child[0]->idval) == 0 )
 			{
-				fprintf(stderr,"Error type 2 at Line %d: Undefined function \"%s\"\n.",root->child[0]->linenum,root->child[0]->idval);
+				errorPrint(2,root->child[0]->linenum,root->child[0]->idval);
 			}
 			//Assert("sth need todo ",__FILE__,__LINE__);
 		}
@@ -251,6 +394,91 @@ void DecList(Node *root)
 		//DecList(root->child[2]);
 	}
 }
+int IsFieldListEqual(FieldList T1,FieldList T2)
+{
+	if(T1 == NULL && T2 == NULL)
+		return 1;
+	else if(T1 ==NULL && T2 != NULL)
+		return 0;
+	else if(T1 != NULL && T2 == NULL)
+		return 0;
+
+	if(strcmp(T1->name,T2->name) != 0)
+	{
+		fprintf(stderr,"fieldlist name not equal");
+		return 0;
+	}
+	else
+	{
+		if(IsTypeEqual(*T1->type,*T2->type) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			if(IsFieldListEqual(T1->tail,T2->tail) == 1)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	}
+}
+int IsTypeEqual(Type_ T1,Type_ T2)
+{
+	if(T1.kind != T2.kind)
+		return 0;
+	else
+	{
+		if(T1.kind == BASIC)
+		{
+			if(T1.u.basic == T2.u.basic)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else if(T1.kind == ARRAY)
+		{
+			if(T1.u.array.size != T2.u.array.size)
+			{
+				return 0;
+			}
+			else
+			{
+				if(IsTypeEqual(*(T1.u.array.elem), *(T2.u.array.elem)) == 1)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+		}
+		else if(T1.kind == STRUCTURE)
+		{
+			if(IsFieldListEqual(T1.u.structure,T2.u.structure))
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		else
+		{
+			Assert("should not reach",__FILE__,__LINE__);
+		}
+	}
+}
 void Dec(Node *root)
 {
 	if(root == NULL)
@@ -260,33 +488,67 @@ void Dec(Node *root)
 
 	if(root -> childnum == 3 )
 	{
-		Assert("sth need todo",__FILE__,__LINE__);
+		Vtype newVar = VarDec(root->child[0]);
+
+		Exp(root->child[2]);
+		if(newVar.type == NULL)
+		{
+			Assert("Should not happen",__FILE__,__LINE__);
+		}
+		if(IsTypeEqual(*newVar.type, root->child[2]->inhtype) == 0)
+		{
+			errorPrint(5,root->child[2]->linenum,"u");
+		}
+		//Assert("sth need todo",__FILE__,__LINE__);
 	}
 	else if(root -> childnum == 1)
 	{
-		VarDec(root->child[0]);
+		Vtype newVar = VarDec(root->child[0]);
+		addVar(newVar);
 	}
 	else
 	{
 		Assert("should not reach",__FILE__,__LINE__);
 	}
 }
-void VarDec(Node *root)
+Vtype VarDec(Node *root)
 {
 	if(root == NULL)
+	{
+		Assert("should not reach",__FILE__,__LINE__);
 		return ;
-	
+	}
 	if(root->childnum == 1) //child is a ID
 	{
 		//add to symboltable;
 		Vtype temp;
-		temp.type = root->inhtype;
 		strcpy(temp.name,root->child[0]->idval);
-		addVar(temp);
+		temp.type = (Type)malloc(sizeof(struct Type_));
+		*temp.type = root->inhtype;
+		return temp;
 	}
 	else
 	{
-		Assert("sth need todo",__FILE__,__LINE__);
+		//VarDec LB INT RB
+		root->child[0]->inhtype = root->inhtype;
+		Vtype temp = VarDec(root->child[0]);
+
+		Type newt = (Type)malloc(sizeof(struct Type_));
+		newt->kind = ARRAY;
+		newt->u.array.elem =(Type)malloc(sizeof(struct Type_));
+		*(newt->u.array.elem) = root->inhtype;
+		newt->u.array.size = root->child[2]->intval;
+
+		if(temp.type->kind != ARRAY)
+		{
+			temp.type=newt;
+		}
+		else
+		{
+			temp.type->u.array.elem = newt;
+		}
+		return temp;
+		//Assert("sth need todo",__FILE__,__LINE__);
 	}
 }
 

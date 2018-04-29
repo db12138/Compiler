@@ -1,6 +1,14 @@
+struct x
+{
+	int c;
+};
+struct t
+{
+	int a;
+	int b;
+	struct x d;
+};
 int main()
 {
-	int i;
-	j = j+1;
-	inc();
+	int j = 1;
 }

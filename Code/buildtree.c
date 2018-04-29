@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-Node * NewNode(char *nodename)
+Node * NewNode(char *nodename,int ln)
 {
 	Node* p = (Node*)malloc(sizeof(struct Node));
 	p->childnum=0;
 	p->type = 0;
+	p->linenum = ln;
 	strcpy(p->strval,nodename);
 	return p;
 }
@@ -20,31 +21,35 @@ Node * NewNodeSyn(char *nodename,int linenum)
 	strcpy(p->strval,nodename);
 	return p;
 }
-Node *NewNodeInt(int value)
+Node *NewNodeInt(int value,int ln)
 {
 	Node *p = (Node *)malloc(sizeof(struct Node));
 	p->childnum = 0;
+	p->linenum = ln;
 	strcpy(p->strval,"INT");
 	p->type = 2;
 	p->intval = value;
 	return p;
 }
-Node *NewNodeFloat(float value)
+Node *NewNodeFloat(float value,int ln)
 {
 	Node *p = (Node *)malloc(sizeof(struct Node));
 	p->childnum = 0;
 	p->type = 3;
+	p->linenum = ln;
 	p->floatval = value;
 	strcpy(p->strval,"FLOAT");
 	return p;
 }
-Node *NewNodeId(char *nodename,char *idname)
+Node *NewNodeId(char *nodename,char *idname,int ln)
 {
 	Node *p = (Node *)malloc(sizeof(struct Node));
 	p->childnum = 0;
+	p->linenum = ln;
 	strcpy(p->strval,nodename);
 	p->type = 4;
 	strcpy(p->idval,idname);
+//	fprintf(stderr,"%s  %d",p->idval,p->linenum);
 	return p;
 }
 Node* MergeNode1(Node *father ,Node* child)

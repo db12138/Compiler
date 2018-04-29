@@ -44,4 +44,8 @@ void yyerror(char *msg)
 	//fprintf(stderr,"error: ....%s\n",msg);
 	if(strcmp(msg, "syntax error"))
 	  printf("Error type B at Line %d :%s\n",yylineno,msg);
+	  else
+	  {
+	  //	fprintf(stderr,"Error type B fault!\n");
+	  }
 }

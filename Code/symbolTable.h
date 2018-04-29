@@ -17,14 +17,14 @@ typedef struct Type_
 }Type_;
 typedef struct FieldList_
 {
-	char* name;
-	Type_ type;
+	char name[50];
+	Type type;
 	FieldList tail;
 }FieldList_;
 
 typedef struct Vtype
 {
-	Type_ type;
+	Type type;
 	char name[100];
 }Vtype;
 
@@ -35,5 +35,10 @@ typedef struct Ftype
 	int paranum;   //the number of parameters 
 	Type_ paralist[80]; //the most number of parameters is 30;
 }Ftype;
+typedef struct Stype
+{
+	char structname[50];
+	Type_ structtype;
+}Stype;
 
 #endif
