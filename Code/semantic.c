@@ -9,10 +9,12 @@ int addStruct(Stype);
 int addVar(Vtype);
 Type checkVar(char *);
 int addFun(Ftype);
-int checkFun(char *);
-int checkStruct(char *);
+Ftype * checkFun(char *);
+Stype * checkStruct(char *);
 int checkRedefine(char *);
+int checkParamList(char *,FieldList);
 Type_ getStructType(char *);
+Type_ getArrayType(Type_);
 void displayType(Type_ );
 
 void Program(Node *);
@@ -32,6 +34,7 @@ void Stmt(Node *);
 void Exp(Node *);
 int IsFieldListEqual(FieldList T1,FieldList T2);
 int IsTypeEqual(Type_ T1,Type_ T2);
+FieldList Args(Node *root);
 
 void StructSpecifier(Node *);
 FieldList DefStruct(Node *);
@@ -89,7 +92,7 @@ void ExtDef(Node *root)
 		if(root->child[2]->hasReturn == 0)
 		{
 			int linenum = root->child[2]->child[3]->linenum;
-			errorPrint(8,linenum,"u");
+			//errorPrint(8,linenum,"u");
 		}
 	}
 	else if(strcmp(root->child[1]->strval,"SEMI") == 0)
@@ -198,8 +201,8 @@ void StructSpecifier(Node *root)
 		//struct tag
 		char *tagid = root->child[1]->child[0]->idval;
 		int linenum = root->child[1]->child[0]->linenum;
-		int j = checkStruct(tagid);
-		if(j==0)
+		Stype *j = checkStruct(tagid);
+		if(j==NULL)
 		{
 			errorPrint(17,linenum,tagid);
 		}
@@ -220,7 +223,6 @@ void StructSpecifier(Node *root)
 		}
 		else
 		{
-			//fprintf(stderr,"test1");
 			Stype newSt;
 			Node *opt = root->child[1];
 			strcpy(newSt.structname,opt->child[0]->idval);
@@ -329,15 +331,15 @@ void FunDec(Node *root)
 		Ftype newfun;
 		strcpy(newfun.name,root->child[0]->idval);
 		newfun.paralist = VarList(root->child[2]);
-		newfun.retn = root->inhtype;
+		newfun.retn =root->inhtype;
 		FieldList pi = newfun.paralist;
 		newfun.paranum = 0;
 		for(;pi!=NULL;pi=pi->tail)
 		{
 			newfun.paranum++;
 		}
-		int j = checkFun(newfun.name);
-		if(j == 0)
+		Ftype * j = checkFun(newfun.name);
+		if(j == NULL)
 		{
 			addFun(newfun);
 		}
@@ -354,8 +356,8 @@ void FunDec(Node *root)
 		newfun.retn = root->inhtype;
 		newfun.paranum = 0;
 		newfun.paralist = NULL;
-		int j = checkFun(newfun.name);
-		if(j == 0)
+		Ftype * j = checkFun(newfun.name);
+		if(j == NULL)
 		{
 			addFun(newfun);
 		}
@@ -395,13 +397,21 @@ void StmtList(Node *root)
 	}
 	root->child[0]->inhtype = root->inhtype;
 	Stmt(root->child[0]);
-	root->hasReturn = root->child[0]->hasReturn;
+	int p1 = root->child[0]->hasReturn;
+	int p2 =0;
 	if(root->child[1] == NULL)
-		return;
+	{
+		
+	}
 	else
 	{
 		root->child[1]->inhtype = root->inhtype;
 		StmtList(root->child[1]);
+		p2 = root->child[1]->hasReturn;
+	}
+	if((p1 + p2) >= 1)
+	{
+		root->hasReturn = 1;
 	}
 }
 void Stmt(Node *root)
@@ -426,8 +436,8 @@ void Stmt(Node *root)
 		Exp(root->child[1]);
 		Type_ T1 = root->child[1]->inhtype;
 		Type_ T2 = root->inhtype;
-		displayType(T1);
-		displayType(T2);
+		//displayType(T1);
+		//displayType(T2);
 
 		if(IsTypeEqual(T1,T2) == 0)
 		{
@@ -480,7 +490,17 @@ void Exp(Node *root)
 			Exp(root->child[0]);
 			if(strcmp(root->child[1]->strval,"DOT") ==0)
 			{
-				Assert("sth neet todo ",__FILE__,__LINE__);
+				//Exp DOT ID
+				//Assert("sth neet todo ",__FILE__,__LINE__);
+				if(root->child[0]->inhtype.kind != STRUCTURE)
+				{
+					errorPrint(13,root->child[1]->linenum,".");
+				}
+				else
+				{
+					//Stype *J = checkStruct()
+					Assert("sth need TODO ",__FILE__,__LINE__);
+				}
 			}
 			else
 			{
@@ -499,7 +519,24 @@ void Exp(Node *root)
 					Type_ T2 = root->child[2]->inhtype;
 					//displayType(T1);
 					//displayType(T2);
-					if(IsTypeEqual(T1,T2) == 0)
+
+
+					if(T1.kind == ARRAY && T2.kind != ARRAY)
+					{
+						//T1 type == array T2 type == basic
+						Type_ tp1 = getArrayType(T1);
+						//displayType(tp1);
+						int J= IsTypeEqual(tp1,T2);
+						if(J == 0)
+						{
+							
+						fprintf(stderr,"de2");
+							int linenum = root->child[1]->linenum;
+							errorPrint(5,linenum,"u");
+						}
+
+					}
+					else if(IsTypeEqual(T1,T2) == 0)
 					{
 						int linenum = root->child[1]->linenum;
 						errorPrint(5,linenum,"u");
@@ -547,9 +584,36 @@ void Exp(Node *root)
 		else if(strcmp(root->child[0]->strval,"ID") == 0)
 		{
 			//Exp -> ID LP RP
-			if(checkFun(root->child[0]->idval) == 0 )
+			Ftype * checkj = checkFun(root->child[0]->idval);
+			if(checkj  == NULL )
 			{
-				errorPrint(2,root->child[0]->linenum,root->child[0]->idval);
+				
+				Type j1 = checkVar(root->child[0]->idval);
+				if(j1 == NULL)
+				{
+					int linenum = root->child[0]->linenum;
+					//function not defined
+					errorPrint(2,linenum,root->child[0]->idval);
+				}
+				else
+				{
+					//not a function
+					int linenum = root->child[0]->linenum;
+					errorPrint(11,linenum,root->child[0]->idval);
+				}
+			}
+			else
+			{
+				int j = checkParamList(root->child[0]->idval,NULL);
+				if(j == 0)
+				{
+					errorPrint(9,root->child[1]->linenum,root->child[0]->idval);
+				}
+				else
+				{
+					//function call Exp->inhtype should be function return type;
+					root->inhtype = checkj->retn;
+				}
 			}
 			//Assert("sth need todo ",__FILE__,__LINE__);
 		}
@@ -560,18 +624,114 @@ void Exp(Node *root)
 	}
 	else if(root->childnum == 4)
 	{
+		if(strcmp(root->child[0]->strval,"ID") == 0)
+		{
 			//Assert("sth need todo ",__FILE__,__LINE__);
 			//ID LP Args RP  function call
-			int j = checkFun(root->child[0]->idval);
-			if(j == 0)
+			Ftype * checkj = checkFun(root->child[0]->idval);
+			if(checkj == NULL)
 			{
-				int linenum = root->child[0]->linenum;
-				errorPrint(2,linenum,root->child[0]->idval);
+				Type j1 = checkVar(root->child[0]->idval);
+				if(j1 == NULL)
+				{
+					int linenum = root->child[0]->linenum;
+					//function not defined
+					errorPrint(2,linenum,root->child[0]->idval);
+				}
+				else
+				{
+					//not a function
+					int linenum = root->child[0]->linenum;
+					errorPrint(11,linenum,root->child[0]->idval);
+				}
 			}
+			else
+			{
+				//check paramlist
+				FieldList parahead = Args(root->child[2]);
+				int j =checkParamList(root->child[0]->idval,parahead);
+				if(j == 0) //not match
+				{
+					errorPrint(9,root->child[2]->linenum,root->child[0]->idval);
+				}
+				else
+				{
+					root->inhtype = checkj->retn;
+
+				}
+
+			}
+		}
+		else if(strcmp(root->child[0]->strval,"Exp") == 0)
+		{
+			//Exp LB Exp RB
+			Exp(root->child[0]);
+			if(root->child[0]->inhtype.kind != ARRAY)
+			{
+				errorPrint(10,root->child[0]->linenum,root->child[0]->child[0]->idval);
+			}
+			else
+			{
+				//not int
+				Exp(root->child[2]);
+				Type_ temp = root->child[2]->inhtype;
+				if(temp.kind != BASIC)
+				{
+					//char err[30] = root->child[2]->child[0]->
+					//I can add more error information
+					errorPrint(12,root->child[2]->linenum,"u");
+				}
+				else if(temp.u.basic != 1)
+				{
+						errorPrint(12,root->child[2]->linenum,"u");
+				}
+				else
+				{
+					//pass
+					root->inhtype = root->child[0]->inhtype;
+				}
+				
+			}
+		}
+		else
+		{
+			Assert("should not reach",__FILE__,__LINE__);
+		}
 	}
 	else
 	{
 		Assert("should not reach",__FILE__,__LINE__);
+	}
+}
+FieldList Args(Node *root)
+{
+	if(root == NULL)
+	{
+		return NULL;
+	}
+	if(root->childnum == 3)
+	{
+		FieldList parahead = (FieldList)malloc(sizeof(struct FieldList_));
+		parahead->tail = NULL;
+		Exp(root->child[0]);
+		parahead->type = (Type)malloc(sizeof(struct Type_));
+		*(parahead->type) = root->child[0]->inhtype;
+		parahead->tail = Args(root->child[2]);
+		return parahead;
+	}
+	else if(root->childnum == 1)
+	{
+		FieldList parahead = (FieldList)malloc(sizeof(struct FieldList_));
+		parahead->tail = NULL;
+		Exp(root->child[0]);
+		parahead->type = (Type)malloc(sizeof(struct Type_));
+		*(parahead->type) = root->child[0]->inhtype;
+		return parahead;
+	}
+	else
+	{
+		Assert("should not reach",__FILE__,__LINE__);
+		return NULL;
 	}
 }
 void DefList(Node *root)

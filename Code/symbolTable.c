@@ -10,6 +10,7 @@ Stype structtable[100];
 int structnum;
 
 void displayType(Type_ var);
+int IsTypeEqual(Type_,Type_);
 void initTable()
 {
 	varnum = 0;
@@ -28,17 +29,40 @@ Type_ getStructType(char *name)
 	Type_ init;
 	return init;
 }
-int checkStruct(char *name)
+Type_ getArrayType(Type_ A)
+{
+	//A is a array type
+	/*while(1)
+	{
+		if(A.kind == BASIC)
+		{
+			return A;
+		}
+		else
+		{
+			A = *(A.u.array.elem);
+		}
+	}*/
+	if(A.kind == BASIC)
+	{
+		return A;
+	}
+	else
+	{
+		return getArrayType(*(A.u.array.elem));
+	}
+}
+Stype* checkStruct(char *name)
 {
 	int i=0;
 	for(;i<structnum;i++)
 	{
 		if(strcmp(structtable[i].structname,name) == 0)
 		{
-			return 1;
+			return &structtable[i];
 		}
 	}
-	return 0;
+	return NULL;
 }
 int addStruct(Stype s)
 {
@@ -80,18 +104,49 @@ int checkRedefine(char *name)
 	return 0;
 }
 
-int checkFun(char *funname)
+
+Ftype * checkFun(char *funname)
 {
 	int i=0;
 	for(;i<funnum;i++)
 	{
 		if(strcmp(funtable[i].name,funname) == 0)
 		{
-			return 1;
+			return &funtable[i];
 		}
 	}
-	return 0;
+	return NULL;
 }
+
+int checkParamList(char *funname,FieldList paraList)
+{
+	int i=0;
+	for(;i<funnum;i++)
+	{
+		if(strcmp(funtable[i].name,funname) == 0)
+		{
+			FieldList p1 = funtable[i].paralist;
+			FieldList p2 = paraList;
+			for(;p1!=NULL && p2 !=NULL ;p1=p1->tail,p2=p2->tail)
+			{
+				int j =IsTypeEqual(*(p1->type),*(p2->type));
+				if(j == 0)
+				{
+					// not equal;
+					return 0;
+				}
+			}
+			if((p1 == NULL && p2!= NULL) || (p1!=NULL && p2==NULL))
+				return 0;
+			else
+			{
+				return 1;
+			}
+		}
+	}
+	return 0; //not found
+}
+
 int addVar(Vtype var)
 {
 	vartable[varnum++]=var;
