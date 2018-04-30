@@ -5,7 +5,7 @@ extern Vtype vartable[];
 extern Ftype funtalbe[];
 
 void errorPrint(int ,int ,char *); 
-int addStruct(Stype);
+FieldList addStruct(Stype);
 int addVar(Vtype);
 Type checkVar(char *);
 int addFun(Ftype);
@@ -16,6 +16,7 @@ int checkParamList(char *,FieldList);
 Type_ getStructType(char *);
 Type_ getArrayType(Type_);
 void displayType(Type_ );
+Type checkHasField(FieldList ,char*);
 
 void Program(Node *);
 void ExtDefList(Node *);
@@ -121,11 +122,17 @@ FieldList DefListStruct(Node *root)
 	FieldList head = DefStruct(root->child[0]);
 	if(head == NULL)
 	{
-		Assert("should not happen",__FILE__,__LINE__);
+		//struct definition error
+		//Assert("should not happen",__FILE__,__LINE__);
 	}
 	else
 	{
-		head->tail = DefListStruct(root->child[1]);
+		//find tail
+		FieldList pi = head;
+		for(;pi->tail != NULL;pi=pi->tail)
+		{}
+		//link
+		pi->tail = DefListStruct(root->child[1]);
 	}
 	return head;
 
@@ -136,6 +143,7 @@ FieldList DefStruct(Node *root)
 	{
 		return NULL;
 	}
+	//Specifier DecList SEMI
 	Specifier(root->child[0]);
 	root->child[1]->inhtype = root->child[0]->inhtype;
 	
@@ -182,13 +190,16 @@ FieldList DecStruct(Node *root)
 
 		FieldList head = (FieldList)malloc(sizeof(struct FieldList_));
 		strcpy(head->name,temp.name);
+		head->linenum = root->child[0]->linenum;
 		head->type = temp.type;
 		head->tail = NULL;
 	}
 	else
 	{
 		//VarDec ASSIGNOP EXP
-		Assert("sth need TODO",__FILE__,__LINE__);
+		errorPrint(151,root->child[1]->linenum,"u");
+		return NULL;
+		//Assert("sth need TODO",__FILE__,__LINE__);
 	}
 }
 void StructSpecifier(Node *root)
@@ -229,8 +240,19 @@ void StructSpecifier(Node *root)
 
 			newSt.structtype.kind =STRUCTURE;
 			newSt.structtype.u.structure = DefListStruct(root->child[3]);
-			addStruct(newSt);//add new struct type;
-			root->inhtype = newSt.structtype;
+			
+
+			FieldList J = addStruct(newSt);//add new struct type;
+			if(J != NULL)
+			{
+				//field redefined ,add new struct fail; 
+				errorPrint(15,J->linenum,J->name);
+			}
+			else
+			{
+				//pass
+				root->inhtype = newSt.structtype;
+			}
 		}
 	}
 	
@@ -428,7 +450,7 @@ void Stmt(Node *root)
 	{
 		Exp(root->child[0]);
 	}
-	else
+	else if(root->childnum == 3)
 	{
 		//RETURN Exp SEMI
 		root->hasReturn = 1;
@@ -444,6 +466,38 @@ void Stmt(Node *root)
 			errorPrint(8,root->child[0]->linenum,"u");
 		}
 		//Assert("TODE",__FILE__,__LINE__);
+	}
+	else if(root->childnum == 7)
+	{
+		Exp(root->child[2]);
+		root->child[4]->inhtype = root->inhtype;
+		Stmt(root->child[4]);
+		root->child[6]->inhtype = root->inhtype;
+		Stmt(root->child[6]);
+	}
+	else if(root ->childnum == 5)
+	{
+		if(strcmp(root->child[0]->strval,"IF") == 0)
+		{
+			Exp(root->child[2]);
+			root->child[4]->inhtype = root->inhtype;
+			Stmt(root->child[4]);
+		}
+		else if(strcmp(root->child[0]->strval,"WHILE") == 0)
+		{	
+			Exp(root->child[2]);
+			root->child[4]->inhtype = root->inhtype;
+			Stmt(root->child[4]);
+		}
+		else
+		{
+			Assert("should not reach here",__FILE__,__LINE__);
+		}
+		
+	}
+	else
+	{
+		Assert("should not reach here",__FILE__,__LINE__);
 	}
 }
 void Exp(Node *root)
@@ -498,8 +552,41 @@ void Exp(Node *root)
 				}
 				else
 				{
-					//Stype *J = checkStruct()
-					Assert("sth need TODO ",__FILE__,__LINE__);
+					//here must be  Exp->ID check
+					if(strcmp(root->child[0]->child[0]->strval,"ID") ==0)
+					{
+						char *idname = root->child[0]->child[0]->idval;
+						Type J = checkVar(idname);
+						if(J == NULL)
+						{
+							Assert("should not reach here",__FILE__,__LINE__);
+
+						}
+						else
+						{
+							if(J->kind != STRUCTURE)
+							{
+							Assert("should not reach here",__FILE__,__LINE__);
+								
+							}
+							FieldList pi = J->u.structure;
+							char *fieldname = root->child[2]->idval;
+							Type j2 = checkHasField(pi,fieldname);
+							if( j2 == NULL)
+							{
+								errorPrint(14,root->child[2]->linenum,fieldname);
+							}
+							else
+							{
+								root->inhtype = *j2; 
+								//pass
+							}
+						}
+					}
+					else
+					{
+						Assert("should not reach here",__FILE__,__LINE__);
+					}
 				}
 			}
 			else
@@ -760,11 +847,13 @@ void DecList(Node *root)
 	if(root == NULL)
 		return;
 	root->child[0]->inhtype = root->inhtype;
+	
 	Dec(root->child[0]);
 	if(root->childnum==3)
 	{
-		Assert("sth need todo",__FILE__,__LINE__);
-		//DecList(root->child[2]);
+		//Assert("sth need todo",__FILE__,__LINE__);
+		root->child[2]->inhtype = root->inhtype;
+		DecList(root->child[2]);
 	}
 }
 int IsFieldListEqual(FieldList T1,FieldList T2)

@@ -17,6 +17,17 @@ void initTable()
 	funnum = 0;
 	structnum = 0;
 }
+Type checkHasField(FieldList pi,char *name)
+{
+	for(;pi!=NULL;pi=pi->tail)
+	{
+		if(strcmp(pi->name,name) == 0)
+		{
+			return pi->type;
+		}
+	}
+	return NULL;
+}
 Type_ getStructType(char *name)
 {
 	int i=0;
@@ -64,10 +75,26 @@ Stype* checkStruct(char *name)
 	}
 	return NULL;
 }
-int addStruct(Stype s)
+FieldList addStruct(Stype s)
 {
+	//check redefined field
+	FieldList pi = s.structtype.u.structure;
+
+	for(;pi!=NULL;pi=pi->tail)
+	{
+		char *f1 = pi->name;
+		FieldList cur = pi->tail;
+		for(;cur != NULL;cur = cur->tail)
+		{
+			char *f2 = cur->name;
+			if(strcmp(f1,f2) == 0)
+			{
+				return cur;
+			}
+		}
+	}
 	structtable[structnum++] = s;
-	return 0;
+	return NULL;
 }
 int addFun(Ftype fun)
 {

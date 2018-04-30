@@ -18,6 +18,7 @@ typedef struct Type_
 typedef struct FieldList_
 {
 	char name[50];
+	int linenum;
 	Type type;
 	FieldList tail;
 }FieldList_;

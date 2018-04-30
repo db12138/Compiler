@@ -8,7 +8,13 @@ extern BOOL hasError;
  */
 void errorPrint(int i, int j, char *var) {
 	hasError = TRUE;
-	fprintf(stderr,"Error type %d at Line %d: ", i, j);
+	int i2 =0;
+	if(i>100)
+		i2 = i/10;
+	else
+		i2 = i; 
+
+	fprintf(stderr,"Error type %2d at Line %d: ", i, j);
 	switch(i) {
 		case 1: fprintf(stderr,"Undefined variable \"%s\".\n", var); break;
 		case 2: fprintf(stderr,"Undefined function \"%s\".\n", var); break;
@@ -25,6 +31,7 @@ void errorPrint(int i, int j, char *var) {
 		case 13: fprintf(stderr,"Illegal use of \".\".\n"); break;
 		case 14: fprintf(stderr,"Non-existent field \"%s\".\n", var); break;
 		case 15: fprintf(stderr,"Redefined field \"%s\".\n", var); break;
+		case 151: fprintf(stderr,"Illegal Assignop in struct definition .\n"); break;
 		case 16: fprintf(stderr,"Duplicated name \"%s\".\n", var); break;
 		case 17: fprintf(stderr,"Undefined structure \"%s\".\n", var); break;
 		case 18: fprintf(stderr,"Undefined function \"%s\".\n", var); break;
