@@ -70,7 +70,7 @@ ExtDefList : ExtDef ExtDefList {Node *p=NewNodeSyn("ExtDefList",@$.first_line); 
     |{$$=NULL;}
     ;
 ExtDef : Specifier ExtDecList SEMI {Node* p=NewNodeSyn("ExtDef",@$.first_line);$$=MergeNode3(p,$1,$2,$3);}
-    | Specifier ExtDecList error SEMI { yyclearin; yyerrok; }
+    | Specifier ExtDecList error SEMI { yyerror("wrong global def."); yyclearin; yyerrok; }
     | Specifier ExtDecList error Specifier{ yyerror(ERR_SEMI);yyerrok; }
     | Specifier SEMI {Node *p=NewNodeSyn("ExtDef",@$.first_line); $$=MergeNode2(p,$1,$2);}
     | error SEMI {$$ = NewNodeSyn("error",@$.first_line); yyerror("some error in this defination.");yyerrok; yyclearin; }
