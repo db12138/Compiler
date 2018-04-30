@@ -18,6 +18,8 @@ Type_ getArrayType(Type_);
 void displayType(Type_ );
 Type checkHasField(FieldList ,char*);
 int checkRedef(char *);
+int checkDec(Dtype,int);
+int addDec(Dtype);
 
 void Program(Node *);
 void ExtDefList(Node *);
@@ -37,6 +39,7 @@ void Exp(Node *);
 int IsFieldListEqual(FieldList T1,FieldList T2);
 int IsTypeEqual(Type_ T1,Type_ T2);
 FieldList Args(Node *root);
+void FunDecStatement(Node * root);
 
 void StructSpecifier(Node *);
 FieldList DefStruct(Node *);
@@ -44,6 +47,7 @@ FieldList DefListStruct(Node *);
 FieldList DecListStruct(Node *);
 FieldList DecStruct(Node *);
 
+int DefOrSt=0;
 void Program(Node *root)
 {
 	if(root == NULL)
@@ -84,17 +88,31 @@ void ExtDef(Node *root)
 		return;
 	if(strcmp(root->child[1]->strval,"FunDec") == 0)
 	{
-		//specifier Fundec compSt
-		Specifier(root->child[0]);
-		root->child[1]->inhtype = root->child[0]->inhtype;
-
-		FunDec(root->child[1]);
-		root->child[2]->inhtype = root->child[0]->inhtype;
-		CompSt(root->child[2]);
-		if(root->child[2]->hasReturn == 0)
+		if(strcmp(root->child[2]->strval,"CompSt") == 0)
 		{
-			//int linenum = root->child[2]->child[3]->linenum;
-			//errorPrint(8,linenum,"u");
+			//specifier Fundec compSt
+			Specifier(root->child[0]);
+			root->child[1]->inhtype = root->child[0]->inhtype;
+
+			FunDec(root->child[1]);
+			root->child[2]->inhtype = root->child[0]->inhtype;
+			CompSt(root->child[2]);
+			if(root->child[2]->hasReturn == 0)
+			{
+				//int linenum = root->child[2]->child[3]->linenum;
+				//errorPrint(8,linenum,"u");
+			}
+		}
+		else if(strcmp(root->child[2]->strval,"SEMI") == 0)
+		{
+			//Specifier FunDec SEMI
+			Specifier(root->child[0]);
+			root->child[1]->inhtype = root->child[0]->inhtype;
+			FunDecStatement(root->child[1]);
+		}
+		else
+		{
+			Assert("should not reach",__FILE__,__LINE__);
 		}
 	}
 	else if(strcmp(root->child[1]->strval,"SEMI") == 0)
@@ -307,14 +325,21 @@ FieldList ParamDec(Node *root)
 		root->child[1]->inhtype = root->child[0]->inhtype;
 		Vtype newParam = VarDec(root->child[1]);
 		//add to vartable;
-		if(checkVar(newParam.name) == NULL)
+		if(DefOrSt == 0)
 		{
-			addVar(newParam);
+			if(checkVar(newParam.name) == NULL)
+			{
+				addVar(newParam);
+			}
+			else
+			{
+				int linenum = root->child[1]->linenum;
+				errorPrint(3,linenum,newParam.name);
+			}
 		}
 		else
 		{
-			int linenum = root->child[1]->linenum;
-			errorPrint(3,linenum,newParam.name);
+			//statement
 		}
 		//return param type
 		FieldList retn = (FieldList)malloc(sizeof(struct FieldList_));
@@ -358,7 +383,7 @@ void FunDec(Node *root)
 {
 	if(root == NULL)
 		return;
-	
+	DefOrSt = 0;
 	if(root->childnum == 4)
 	{
 		//ID LP VarList RP
@@ -372,6 +397,16 @@ void FunDec(Node *root)
 		{
 			newfun.paranum++;
 		}
+		//check consisi with statement first
+		Dtype forcheck;
+		strcpy(forcheck.name,newfun.name);
+		forcheck.retn = newfun.retn;
+		forcheck.paranum = newfun.paranum;
+		forcheck.paralist = newfun.paralist;
+		forcheck.linenum = root->child[0]->linenum;
+		checkDec(forcheck,DefOrSt);
+
+		//check has defined? 
 		Ftype * j = checkFun(newfun.name);
 		if(j == NULL)
 		{
@@ -398,6 +433,61 @@ void FunDec(Node *root)
 		else
 		{
 			errorPrint(4,root->child[0]->linenum,newfun.name);	
+		}
+	}
+	else
+	{
+		Assert("Should not reach",__FILE__,__LINE__);
+	}
+}
+void FunDecStatement(Node * root)
+{
+	if(root == NULL)
+		return;
+	DefOrSt = 1;
+	if(root->childnum == 4)
+	{
+		//ID LP VarList RP
+		Dtype newdec;
+		strcpy(newdec.name,root->child[0]->idval);
+		newdec.paralist = VarList(root->child[2]);
+		newdec.retn =root->inhtype;
+		FieldList pi = newdec.paralist;
+		newdec.paranum = 0;
+		newdec.defined = 0;
+		newdec.linenum = root->child[0]->linenum;
+		for(;pi!=NULL;pi=pi->tail)
+		{
+			newdec.paranum++;
+		}
+		int  j = checkDec(newdec,DefOrSt); //errorPrint(19 into the Fuc)
+		if(j == 0)
+		{
+			addDec(newdec);
+		}
+		else
+		{
+			//Do nothing
+		}
+	}
+	else if(root->childnum == 3)
+	{
+		//ID LP RP
+		Dtype newdec;
+		strcpy(newdec.name,root->child[0]->idval);
+		newdec.retn = root->inhtype;
+		newdec.paranum = 0;
+		newdec.paralist = NULL;
+		newdec.defined = 0;
+		newdec.linenum = root->child[0]->linenum;
+		int j = checkDec(newdec,DefOrSt);//errorPrint(19 into the fuc)
+		if(j == 0)
+		{
+			addDec(newdec);
+		}
+		else
+		{
+			//Do nothing 
 		}
 	}
 	else

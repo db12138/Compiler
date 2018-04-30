@@ -34,8 +34,10 @@ void errorPrint(int i, int j, char *var) {
 		case 151: fprintf(stderr,"Illegal Assignop in struct definition .\n"); break;
 		case 16: fprintf(stderr,"Duplicated name \"%s\".\n", var); break;
 		case 17: fprintf(stderr,"Undefined structure \"%s\".\n", var); break;
-		case 18: fprintf(stderr,"Undefined function \"%s\".\n", var); break;
-		case 19: fprintf(stderr,"Inconsistent declaration of function \"%s\".\n", var); break;
+		case 18: fprintf(stderr,"Only Statement But Undefined function \"%s\".\n", var); break;
+		case 191: fprintf(stderr,"Inconsistent declaration of function \"%s\" in param number.\n", var); break;
+		case 192: fprintf(stderr,"Inconsistent declaration of function \"%s\" in param.\n", var); break;
+		case 19: fprintf(stderr,"Inconsistent declaration of function \"%s\" in return type.\n", var); break;
 		default: break;
 	}
 }

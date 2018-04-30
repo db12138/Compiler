@@ -76,6 +76,7 @@ ExtDef : Specifier ExtDecList SEMI {Node* p=NewNodeSyn("ExtDef",@$.first_line);$
     | error SEMI {$$ = NewNodeSyn("error",@$.first_line); yyerror("some error in this defination.");yyerrok; yyclearin; }
     | Specifier error SEMI {yyerror("syntax error, wrong expression."); yyerrok; }
     | Specifier FunDec CompSt {Node *p=NewNodeSyn("ExtDef",@$.first_line); $$=MergeNode3(p,$1,$2,$3);}
+	| Specifier FunDec SEMI {Node *p = NewNodeSyn("ExtDef",@$.first_line); $$=MergeNode3(p,$1,$2,$3);}
     | Specifier FunDec error LC { yyerror(ERR_RP); yyerrok; }
     | Specifier FunDec error RC { yyerror(ERR_RP" or \"{\"."); yyerrok; }
     ;

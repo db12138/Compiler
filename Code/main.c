@@ -11,6 +11,7 @@ int yyparse(void);
 void Program(Node *);
 void displaySymbolTable();
 void initTable();
+void checkAllStatement();
 int main(int argc,char **argv)
 {
 	Root = NULL;
@@ -33,6 +34,7 @@ int main(int argc,char **argv)
 
 	  Program(Root);
 	  displaySymbolTable();
+	  checkAllStatement();
 	}
 	
 	return 0;

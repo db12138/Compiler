@@ -8,16 +8,90 @@ Ftype funtable[500];
 int funnum;
 Stype structtable[100];
 int structnum;
+Dtype dectable[600];
+int decnum;
 
 void displayType(Type_ var);
 int IsTypeEqual(Type_,Type_);
 Type checkVar(char *varname);
+void errorPrint(int ,int ,char *);
+int checkDecParamList(FieldList p1,FieldList p2);
+int checkDec(Dtype new,int DOS);
 
 void initTable()
 {
 	varnum = 0;
 	funnum = 0;
 	structnum = 0;
+	decnum = 0;
+}
+int checkDecParamList(FieldList p1,FieldList p2)
+{
+	for(;(p1!=NULL) && (p2!=NULL);p1=p1->tail,p2=p2->tail)
+	{
+		//only check type
+		if(IsTypeEqual(*(p1->type),*(p2->type)) == 0)
+		{
+			return 0;
+		}
+	}
+	if(p1 == NULL && p2 == NULL)
+		return 1;
+	else
+		return 0;
+}
+int checkDec(Dtype new,int DOS)
+{
+	int i=0;
+	for(;i<decnum;i++)
+	{
+		if(strcmp(dectable[i].name,new.name) == 0)
+		{
+			if(new.paranum != dectable[i].paranum)
+			{
+				//check paramlist number
+				//fprintf(stderr,"er: %d %d\n",new.paranum,dectable[i].paranum);
+				errorPrint(191,new.linenum,new.name);
+				return 1;
+			}
+			else if(IsTypeEqual(new.retn,dectable[i].retn) == 0)
+			{
+				//return type not equa;;
+				errorPrint(19,new.linenum,new.name);
+				return 1;
+			}
+			else if(checkDecParamList(new.paralist,dectable[i].paralist) ==0)
+			{
+				errorPrint(192,new.linenum,new.name);
+				return 1;
+			}
+			else
+			{
+				if(DOS == 0)
+				{
+					dectable[i].defined = 1;
+				}
+				return 1; //has defined but dont have conflit;
+			}
+		}
+	}
+	return 0;
+}
+int addDec(Dtype new)
+{
+	dectable[decnum++] = new;
+	return 0;
+}
+void checkAllStatement()
+{
+	int i=0;
+	for(;i<decnum;i++)
+	{
+		if(dectable[i].defined == 0)
+		{
+			errorPrint(18,dectable[i].linenum,dectable[i].name);
+		}
+	}
 }
 Type checkHasField(FieldList pi,char *name)
 {
@@ -223,7 +297,6 @@ void displayFieldList(FieldList f)
 }
 void displayType(Type_ var)
 {
-	char BasicType[50];
 	if(var.kind == BASIC)
 	{
 		if(var.u.basic == 1)
