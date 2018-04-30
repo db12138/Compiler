@@ -11,6 +11,8 @@ int structnum;
 
 void displayType(Type_ var);
 int IsTypeEqual(Type_,Type_);
+Type checkVar(char *varname);
+
 void initTable()
 {
 	varnum = 0;
@@ -74,6 +76,23 @@ Stype* checkStruct(char *name)
 		}
 	}
 	return NULL;
+}
+int checkRedef(char *name)
+{
+	//check Redefination
+	Stype *j1 = checkStruct(name);
+	if(j1 != NULL)
+	{
+		//redefnation
+		return 1;
+	}
+	Type j2 = checkVar(name);
+	if(j2 != NULL)
+	{
+		//Redefination
+		return 1;
+	}
+	return 0;
 }
 FieldList addStruct(Stype s)
 {

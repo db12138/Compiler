@@ -17,6 +17,7 @@ Type_ getStructType(char *);
 Type_ getArrayType(Type_);
 void displayType(Type_ );
 Type checkHasField(FieldList ,char*);
+int checkRedef(char *);
 
 void Program(Node *);
 void ExtDefList(Node *);
@@ -92,7 +93,7 @@ void ExtDef(Node *root)
 		CompSt(root->child[2]);
 		if(root->child[2]->hasReturn == 0)
 		{
-			int linenum = root->child[2]->child[3]->linenum;
+			//int linenum = root->child[2]->child[3]->linenum;
 			//errorPrint(8,linenum,"u");
 		}
 	}
@@ -193,6 +194,8 @@ FieldList DecStruct(Node *root)
 		head->linenum = root->child[0]->linenum;
 		head->type = temp.type;
 		head->tail = NULL;
+		//head = NULL;
+		return head;
 	}
 	else
 	{
@@ -226,6 +229,7 @@ void StructSpecifier(Node *root)
 	}
 	else if(root->childnum ==5)
 	{
+		//struct OptTag LC DefList RC
 		if(root->child[1] == NULL)
 		{
 			//OptTag == NULL;
@@ -241,17 +245,25 @@ void StructSpecifier(Node *root)
 			newSt.structtype.kind =STRUCTURE;
 			newSt.structtype.u.structure = DefListStruct(root->child[3]);
 			
-
-			FieldList J = addStruct(newSt);//add new struct type;
-			if(J != NULL)
+			int judge = checkRedef(newSt.structname);
+			if(judge == 1)
 			{
-				//field redefined ,add new struct fail; 
-				errorPrint(15,J->linenum,J->name);
+				//Redefination
+				errorPrint(16,root->child[1]->linenum,root->child[1]->child[0]->idval);
 			}
 			else
 			{
-				//pass
-				root->inhtype = newSt.structtype;
+				FieldList J = addStruct(newSt);//check field and add new struct type;
+				if(J != NULL)
+				{
+					//field redefined ,add new struct fail; 
+					errorPrint(15,J->linenum,J->name);
+				}
+				else
+				{
+					//pass
+					root->inhtype = newSt.structtype;
+				}
 			}
 		}
 	}
@@ -938,6 +950,7 @@ int IsTypeEqual(Type_ T1,Type_ T2)
 		else
 		{
 			Assert("should not reach",__FILE__,__LINE__);
+			return 0;
 		}
 	}
 }

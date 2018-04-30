@@ -9,12 +9,12 @@ extern BOOL hasError;
 void errorPrint(int i, int j, char *var) {
 	hasError = TRUE;
 	int i2 =0;
-	if(i>100)
+	if(i>(100))
 		i2 = i/10;
 	else
 		i2 = i; 
 
-	fprintf(stderr,"Error type %2d at Line %d: ", i, j);
+	fprintf(stderr,"Error type %d at Line %d: ", i2, j);
 	switch(i) {
 		case 1: fprintf(stderr,"Undefined variable \"%s\".\n", var); break;
 		case 2: fprintf(stderr,"Undefined function \"%s\".\n", var); break;

@@ -1,0 +1,9 @@
+int f()
+{
+	int i=10;
+	return i+1;
+}
+int main()
+{
+	int x = f()+1.1;
+}

@@ -112,6 +112,7 @@ int PrintTab(int num)
 	{
 		printf("  ");
 	}
+	return 0;
 }
 void DisplayTree(Node *head,int n)
 {
