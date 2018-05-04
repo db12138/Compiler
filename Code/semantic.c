@@ -900,6 +900,8 @@ void Exp(Node *root)
 					//next level array or basic
 					Type_ temp = *root->child[0]->inhtype.u.array.elem;
 					root->inhtype = temp;
+					fprintf(stderr,"tp1");
+					displayType(root->inhtype);
 				}
 				
 			}
@@ -1138,7 +1140,7 @@ Vtype VarDec(Node *root)
 		*temp.type = root->inhtype;
 		return temp;
 	}
-	else
+	else if(root->childnum == 4)
 	{
 		//VarDec LB INT RB
 		root->child[0]->inhtype = root->inhtype;
@@ -1156,10 +1158,23 @@ Vtype VarDec(Node *root)
 		}
 		else
 		{
-			temp.type->u.array.elem = newt;
+			Type p = temp.type;
+			while(p->u.array.elem->kind == ARRAY)
+			{
+				p = p->u.array.elem;
+			}
+			//temp.type->u.array.elem = newt;
+			//p->kind = ARRAY;
+			p->u.array.elem = newt;
 		}
 		return temp;
 		//Assert("sth need todo",__FILE__,__LINE__);
+	}
+	else
+	{
+		Assert("should not reach",__FILE__,__LINE__);
+		Vtype init;
+		return init;
 	}
 }
 
