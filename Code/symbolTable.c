@@ -25,6 +25,15 @@ void initTable()
 	structnum = 0;
 	decnum = 0;
 }
+void displayDtable()
+{
+	int i=0;
+	printf(" Dtable:\n");
+	for(;i<decnum;i++)
+	{
+		printf("name:%s\n",dectable[i].name);
+	}
+}
 int checkDecParamList(FieldList p1,FieldList p2)
 {
 	for(;(p1!=NULL) && (p2!=NULL);p1=p1->tail,p2=p2->tail)
@@ -354,6 +363,7 @@ int displaySymbolTable()
 		fprintf(stderr,"\n");
 	}
 	displayStructTable();
+	displayDtable();
 	return 0;
 }
 

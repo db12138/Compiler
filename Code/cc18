@@ -6,6 +6,9 @@ int func(int b)
 	return 1;
 }
 
+int cc(float d,int a)
+{
+}
 int main()
 {
 	

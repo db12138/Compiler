@@ -426,6 +426,15 @@ void FunDec(Node *root)
 		newfun.paranum = 0;
 		newfun.paralist = NULL;
 		Ftype * j = checkFun(newfun.name);
+		//check consisi with statement first
+		Dtype forcheck;
+		strcpy(forcheck.name,newfun.name);
+		forcheck.retn = newfun.retn;
+		forcheck.paranum = newfun.paranum;
+		forcheck.paralist = newfun.paralist;
+		forcheck.linenum = root->child[0]->linenum;
+		checkDec(forcheck,DefOrSt);
+
 		if(j == NULL)
 		{
 			addFun(newfun);
