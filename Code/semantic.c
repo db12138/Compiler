@@ -719,7 +719,7 @@ void Exp(Node *root)
 					//displayType(T2);
 
 
-					if(T1.kind == ARRAY && T2.kind != ARRAY)
+					/*if(T1.kind == ARRAY && T2.kind != ARRAY)
 					{
 						//T1 type == array T2 type == basic
 						Type_ tp1 = getArrayType(T1);
@@ -728,13 +728,24 @@ void Exp(Node *root)
 						if(J == 0)
 						{
 							
-						fprintf(stderr,"de2");
 							int linenum = root->child[1]->linenum;
 							errorPrint(5,linenum,"u");
 						}
+						else if(T1.u.array.elem->kind == ARRAY)
+						{
+							//basic type equal but basic assign to array
+							fprintf(stderr,"tp1");
+							int linenum =root->child[1]->linenum;
+							errorPrint(5,linenum,"u");
+						}
+						else
+						{
+							//pass 
+							root->inhtype = tp1;
+						}
 
-					}
-					else if(IsTypeEqual(T1,T2) == 0)
+					}*/
+					if(IsTypeEqual(T1,T2) == 0)
 					{
 						int linenum = root->child[1]->linenum;
 						errorPrint(5,linenum,"u");
@@ -886,7 +897,9 @@ void Exp(Node *root)
 				else
 				{
 					//pass
-					root->inhtype = root->child[0]->inhtype;
+					//next level array or basic
+					Type_ temp = *root->child[0]->inhtype.u.array.elem;
+					root->inhtype = temp;
 				}
 				
 			}
