@@ -900,8 +900,8 @@ void Exp(Node *root)
 					//next level array or basic
 					Type_ temp = *root->child[0]->inhtype.u.array.elem;
 					root->inhtype = temp;
-					fprintf(stderr,"tp1");
-					displayType(root->inhtype);
+					//fprintf(stderr,"tp1");
+					//displayType(root->inhtype);
 				}
 				
 			}
