@@ -555,7 +555,8 @@ void Stmt(Node *root)
 	if(root->childnum == 1)
 	{
 		//ComSt
-		Assert("TODO",__FILE__,__LINE__);
+		//Assert("TODO",__FILE__,__LINE__);
+		CompSt(root->child[0]);
 	}
 	else if(root->childnum == 2)
 	{
