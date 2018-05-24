@@ -73,13 +73,20 @@ void ExtDecList(Node *root)
 	
 	if(root->childnum == 1)
 	{
+		//VarDec
 		root->child[0]->inhtype = root->inhtype;
 		Vtype newVar = VarDec(root->child[0]);
 		addVar(newVar);
 	}
 	else
 	{
-		Assert("std need TODO",__FILE__,__LINE__);
+		//VarDec COMMA ExtDecList
+		root->child[0]->inhtype = root->inhtype;
+		Vtype newVar = VarDec(root->child[0]);
+		addVar(newVar);
+		root->child[2]->inhtype = root->inhtype;
+		ExtDecList(root->child[2]);
+		//Assert("std need TODO",__FILE__,__LINE__);
 	}
 }
 void ExtDef(Node *root)
@@ -697,7 +704,7 @@ void Exp(Node *root)
 					}
 					else
 					{
-						Assert("should not reach here",__FILE__,__LINE__);
+						//Assert("should not reach here",__FILE__,__LINE__);
 					}
 				}
 			}
@@ -998,7 +1005,7 @@ int IsFieldListEqual(FieldList T1,FieldList T2)
 
 	if(strcmp(T1->name,T2->name) != 0)
 	{
-		fprintf(stderr,"fieldlist name not equal");
+		//fprintf(stderr,"fieldlist name not equal");
 		return 0;
 	}
 	else
