@@ -1,5 +1,0 @@
-int main(int argc,int argv[10])
-{
-	int x;
-	inc(3);
-}

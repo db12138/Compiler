@@ -829,7 +829,11 @@ void Exp(Node *root)
 	}
 	else if(root->childnum == 2)
 	{
-			Assert("sth need todo ",__FILE__,__LINE__);
+			//MINUS Exp
+			Exp(root->child[1]);
+			root->inhtype = root->child[1]->inhtype;
+			//NOT Exp
+			//Assert("sth need todo ",__FILE__,__LINE__);
 	}
 	else if(root->childnum == 4)
 	{

@@ -28,13 +28,15 @@ int main(int argc,char **argv)
 	yylineno = 1;
 	yyrestart(yyin);
 	yyparse();
+	//Program(Root);
+	//checkAllStatement();
 	if(!hasError)
 	{
-	  DisplayTree(Root,0);
+	  //DisplayTree(Root,0);
+	Program(Root);
+	checkAllStatement();
 
-	  Program(Root);
-	  displaySymbolTable();
-	  checkAllStatement();
+	//  displaySymbolTable();
 	}
 	
 	return 0;

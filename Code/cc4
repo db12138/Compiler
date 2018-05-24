@@ -1,9 +1,0 @@
-int cc()
-{
-	int x=0;
-	x = x+3;
-}
-int cc(int b)
-{
-	return b+1;
-}

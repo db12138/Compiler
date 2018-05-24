@@ -1,5 +1,0 @@
-struct p
-{
-	int a,b;
-	float c;
-};

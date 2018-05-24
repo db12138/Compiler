@@ -1,9 +1,0 @@
-int func()
-{
-	return i;
-}
-int main()
-{
-	func(2);
-	return 0;
-}
