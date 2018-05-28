@@ -90,7 +90,7 @@ void translate_Def(Node * node);
 Operand * translate_Exp(Node * node, OperandKind kind); 
 void translate_DecList(Node * node);
 void translate_Dec(Node * node);
-
+void translate_Args(Node * node);
 
 
 
