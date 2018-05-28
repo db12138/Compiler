@@ -1,0 +1,4 @@
+int a(int t;int y)
+{
+   return t+1;
+}

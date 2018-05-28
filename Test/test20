@@ -1,0 +1,7 @@
+int i;
+int i();
+int main()
+{
+ i = i + 1;
+ return i;
+}

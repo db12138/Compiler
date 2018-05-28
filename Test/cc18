@@ -1,0 +1,15 @@
+int func(int c);
+int func(int a);
+int cc(float d,int a);
+int func(int b)
+{
+	return 1;
+}
+
+int cc(float d,int a)
+{
+}
+int main()
+{
+	
+}

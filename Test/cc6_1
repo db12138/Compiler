@@ -1,0 +1,14 @@
+struct tt
+{
+	int c;
+};
+int main()
+{
+	int a[5];
+	int b;
+	struct tt d;
+
+	d-a;
+	d-b;
+
+}

@@ -1,0 +1,14 @@
+struct x
+{
+	int c;
+};
+struct t
+{
+	int a;
+	int b;
+	struct x d;
+};
+int main()
+{
+	int j = 1;
+}

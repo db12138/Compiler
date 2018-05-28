@@ -1,0 +1,10 @@
+struct tt
+{
+	int a;
+	float b[3][4];
+};
+int main()
+{
+	int x = 1;
+	int tt ;
+}

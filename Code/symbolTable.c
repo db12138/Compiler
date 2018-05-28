@@ -17,6 +17,7 @@ Type checkVar(char *varname);
 void errorPrint(int ,int ,char *);
 int checkDecParamList(FieldList p1,FieldList p2);
 int checkDec(Dtype new,int DOS);
+Ftype * checkFun(char *funname);
 
 void initTable()
 {
@@ -175,6 +176,11 @@ int checkRedef(char *name)
 		//Redefination
 		return 1;
 	}
+	Ftype * j3 = checkFun(name);
+	if(j3 != NULL)
+	{
+		return 1;
+	}	
 	return 0;
 }
 FieldList addStruct(Stype s)

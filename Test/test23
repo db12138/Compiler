@@ -1,0 +1,14 @@
+int func();
+int func();
+int func();
+int func();
+int func();
+
+int func()
+{
+}
+
+int main()
+{
+ float func;
+}

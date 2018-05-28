@@ -1,0 +1,10 @@
+struct A
+{
+ int p;
+};
+
+int main()
+{
+ int a[2][2],i,j,c[2][2][2];
+ a[2] = 1;
+}

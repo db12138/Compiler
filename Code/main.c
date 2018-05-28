@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "lex.yy.c"
-#include "common.h"
+#include "interCode.h"
+
 extern FILE *yyin;
 extern Node *Root;
 BOOL hasError = FALSE;
@@ -16,27 +17,35 @@ int main(int argc,char **argv)
 {
 	Root = NULL;
 	initTable();
-
-	if(argc > 1)
-	{
-		if(!(yyin=fopen(argv[1],"r")))
-		{
+	FILE * out = NULL;
+	if(argc > 2) {
+		if(!(yyin=fopen(argv[1],"r"))) {
 			perror(argv[1]);
 			return 1;
 		}
+		if(!(out = fopen(argv[2], "w"))) {
+			perror(argv[2]);
+			return 1;
+		}
+	}else {
+		if(argc == 1) {
+		 	fprintf(stderr, "Error: Please enter an input source and an output file name!\n\n");
+                } else if (argc == 2) {
+                        fprintf(stderr, "Error: Please enter an output file name!\n\n");
+                }
+                return 1;	
 	}
 	yylineno = 1;
 	yyrestart(yyin);
 	yyparse();
-	//Program(Root);
-	//checkAllStatement();
 	if(!hasError)
 	{
-	  //DisplayTree(Root,0);
-	Program(Root);
-	checkAllStatement();
-
-	//  displaySymbolTable();
+//	  DisplayTree(Root,0);
+//	  displaySymbolTable();
+	  checkAllStatement();
+	  translate_Program(Root);
+	  if(IRError == FALSE)
+		  printIR(out);
 	}
 	
 	return 0;

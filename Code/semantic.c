@@ -73,20 +73,13 @@ void ExtDecList(Node *root)
 	
 	if(root->childnum == 1)
 	{
-		//VarDec
 		root->child[0]->inhtype = root->inhtype;
 		Vtype newVar = VarDec(root->child[0]);
 		addVar(newVar);
 	}
 	else
 	{
-		//VarDec COMMA ExtDecList
-		root->child[0]->inhtype = root->inhtype;
-		Vtype newVar = VarDec(root->child[0]);
-		addVar(newVar);
-		root->child[2]->inhtype = root->inhtype;
-		ExtDecList(root->child[2]);
-		//Assert("std need TODO",__FILE__,__LINE__);
+		Assert("std need TODO",__FILE__,__LINE__);
 	}
 }
 void ExtDef(Node *root)
@@ -562,8 +555,7 @@ void Stmt(Node *root)
 	if(root->childnum == 1)
 	{
 		//ComSt
-		//Assert("TODO",__FILE__,__LINE__);
-		CompSt(root->child[0]);
+		Assert("TODO",__FILE__,__LINE__);
 	}
 	else if(root->childnum == 2)
 	{
@@ -580,7 +572,7 @@ void Stmt(Node *root)
 		//displayType(T1);
 		//displayType(T2);
 
-		if(IsTypeEqual(T1,T2) == 0)
+		if(IsTypeEqual(T1,T2) == 0 && T1.u.basic != 0 && T2.u.basic != 0)
 		{
 			errorPrint(8,root->child[0]->linenum,"u");
 		}
@@ -704,7 +696,7 @@ void Exp(Node *root)
 					}
 					else
 					{
-						//Assert("should not reach here",__FILE__,__LINE__);
+						Assert("should not reach here",__FILE__,__LINE__);
 					}
 				}
 			}
@@ -753,7 +745,7 @@ void Exp(Node *root)
 						}
 
 					}*/
-					if(IsTypeEqual(T1,T2) == 0)
+					if(IsTypeEqual(T1,T2) == 0 && (T1.u.basic != 0 && T2.u.basic != 0))
 					{
 						int linenum = root->child[1]->linenum;
 						errorPrint(5,linenum,"u");
@@ -779,7 +771,7 @@ void Exp(Node *root)
 						errorPrint(7,linenum,"u");
 						root->inhtype = root->child[0]->inhtype;
 					}
-					else if(IsTypeEqual(T1,T2) == 0)
+					else if(IsTypeEqual(T1,T2) == 0 && (T1.u.basic != 0 && T2.u.basic != 0))
 					{
 						//int float operand
 						int linenum = root->child[1]->linenum;
@@ -837,11 +829,7 @@ void Exp(Node *root)
 	}
 	else if(root->childnum == 2)
 	{
-			//MINUS Exp
-			Exp(root->child[1]);
-			root->inhtype = root->child[1]->inhtype;
-			//NOT Exp
-			//Assert("sth need todo ",__FILE__,__LINE__);
+			Assert("sth need todo ",__FILE__,__LINE__);
 	}
 	else if(root->childnum == 4)
 	{
