@@ -2,8 +2,9 @@
 
 #define BUFFERSIZE 64
 
+// OP_NOP just used for translate_Exp, in translate_Stmt
 typedef enum OperandKind_ {
-	OP_TEMP, OP_VARIABLE, OP_CONSTANT, OP_LABEL, OP_FUNCTION, OP_REF
+	OP_TEMP, OP_VARIABLE, OP_CONSTANT, OP_LABEL, OP_FUNCTION, OP_REF, OP_NOP
 } OperandKind;
 
 typedef struct Operand_ {
@@ -61,13 +62,10 @@ typedef struct IRCode_ {
 
 IRCode * IRListHead;
 IRCode * IRListTail;
-int labelsCount = 1;
-int tempVarCount = 1;
-int definedVarCount = 1;
-BOOL IRError = FALSE;
 
 IRCode * createIRCodeNode(IRKind kind);
 Operand * createOperand(OperandKind kind, char * symbolName);
+Operand * dereference(Operand * operand);
 void linkIRCode(IRCode * IR, Operand * result, Operand * opt1, Operand * opt2, char * relop);
 void printIR(FILE * out);
 void printLine(FILE * out, IRCode * head);
@@ -80,5 +78,19 @@ void translate_StructSpecifier(Node * node);
 void translate_OptTag(Node * node);
 void translate_Tag(Node * node);
 char * translate_VarDec(Node * node, BOOL isParam);
+void translate_FunDec(Node * node);
+void translate_VarList(Node * node);
+void translate_ParamDec(Node * node);
+void translate_CompSt(Node * node);
+void translate_StmtList(Node * node);
+void translate_Stmt(Node * node);
+void translate_ExpConditional(Node * node, Operand * labelTRUE, Operand * labelFALSE);
+void translate_DefList(Node * node);
+void translate_Def(Node * node);
+Operand * translate_Exp(Node * node, OperandKind kind); 
+void translate_DecList(Node * node);
+void translate_Dec(Node * node);
+
+
 
 

@@ -5,6 +5,7 @@
 extern FILE *yyin;
 extern Node *Root;
 BOOL hasError = FALSE;
+extern BOOL IRError;
 int errorCount = 0;
 
 void DisplayTree(Node *head,int n);
