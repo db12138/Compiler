@@ -501,7 +501,7 @@ void translate_Dec(Node * node) {
 Operand * translate_Exp(Node * node, OperandKind kind) {
 	assert(node != NULL);
 	
-	Operand * temp;
+	Operand * temp = NULL;
 	switch(kind) {
 		case OP_TEMP:
 			temp = createOperand(OP_TEMP, "");
@@ -566,33 +566,155 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				return NULL;
 			}
 			break;
-		//     | MINUS Exp
-		//     | NOT Exp
+		//     | MINUS Exp 
+		//     | NOT Exp  
 		case 2:
-			
+			if(strcmp(node->child[0]->strval, "NOT") == 0) {
+				Operand * labelTRUE = createOperand(OP_LABEL, "");
+                                Operand * labelFALSE = createOperand(OP_LABEL, "");
+                                Operand * zero = createOperand(OP_VARIABLE, "0");
+                                Operand * one = createOperand(OP_VARIABLE, "1");
+                                linkIRCode(createIRCodeNode(IR_ASSIGN), temp, zero, NULL, NULL);
+                                translate_ExpConditional(node, labelTRUE, labelFALSE);
+                                linkIRCode(createIRCodeNode(IR_LABEL), labelTRUE, NULL, NULL, NULL);
+                                linkIRCode(createIRCodeNode(IR_ASSIGN), temp, one, NULL, NULL);
+                                linkIRCode(createIRCodeNode(IR_LABEL), labelFALSE, NULL, NULL, NULL);
+			}
+			else {
+				Operand * opt = createOperand(OP_TEMP, "");
+				Operand * zero = createOperand(OP_VARIABLE, "0");
+				opt = dereference(translate_Exp(node->child[1], OP_TEMP));
+				linkIRCode(createIRCodeNode(IR_SUB), temp, zero, opt, "-");
+			}
 			break;
 		// Exp : Exp ASSIGNOP Exp 
-		//     | Exp AND Exp
-		//     | Exp OR Exp
-		//     | Exp RELOP Exp
+
 		//     | Exp PLUS Exp
 		//     | Exp MINUS Exp
 		//     | Exp STAR Exp
 		//     | Exp DIV Exp
-		//     | LP Exp RP
+		
+		//     | Exp AND Exp
+		//     | Exp OR Exp
+		//     | Exp RELOP Exp
+
+		//     | LP Exp RP   TODO
 		//     | ID LP RP
-		//     | Exp DOT ID
-		case 3:
+		//     | Exp DOT ID  TODO
+		case 3: {
+			// ASSIGN
+			if(strcmp(node->child[0]->strval, "ASSIGNOP") == 0) {
+				IRCode * irAssign = NULL;
+				Operand * operand = createOperand(OP_TEMP, "");
+				operand = translate_Exp(node->child[0], OP_TEMP);
+				switch(operand->kind) {
+					case OP_VARIABLE:
+					case OP_TEMP:
+						operand = translate_Exp(node->child[2], OP_TEMP);
+						break;
+					case OP_REF: {
+						Operand * opt2 = createOperand(OP_TEMP, "");
+						opt2 = translate_Exp(node->child[2], OP_TEMP);
+						IRCode * ircode = createIRCodeNode(IR_DEREF_L);
+						opt2 = dereference(opt2);
+						linkIRCode(ircode, operand, opt2, NULL, NULL);
+						break;
+					}
+					default:	
+						Assert("Not here.", __FILE__, __LINE__);
+				}
+				if(temp->kind == OP_TEMP) {
+					temp->kind = operand->kind;
+				}
+				else {
+					assert(temp->kind == OP_VARIABLE);
+					IRCode * ircode = createIRCodeNode(IR_ASSIGN);
+					operand = dereference(operand);
+					linkIRCode(ircode, temp, operand, NULL, NULL);
+				}
+			}
+			// PLUS / SUB / STAR / DIV
+			else if(strcmp(node->child[1]->strval, "PLUS") == 0 || strcmp(node->child[1]->strval, "MINUS") == 0 || strcmp(node->child[1]->strval, "STAR") == 0 || strcmp(node->child[1]->strval, "DIV") == 0) {
+				Operand * opt1 = createOperand(OP_TEMP, "");
+                                Operand * opt2 = createOperand(OP_TEMP, "");
+				opt1 = translate_Exp(node->child[0], OP_TEMP);
+				opt2 = translate_Exp(node->child[2], OP_TEMP);
+				opt1 = dereference(opt1);
+				opt2 = dereference(opt2);
+				if(strcmp(node->child[1]->strval, "PLUS") == 0)
+					linkIRCode(createIRCodeNode(IR_ADD), temp, opt1, opt2, "+");
+				else if(strcmp(node->child[1]->strval, "MINUS") == 0)
+					linkIRCode(createIRCodeNode(IR_ADD), temp, opt1, opt2, "-");
+				else if(strcmp(node->child[1]->strval, "STAR") == 0) 
+					linkIRCode(createIRCodeNode(IR_ADD), temp, opt1, opt2, "*");
+				else if(strcmp(node->child[1]->strval, "DIV") == 0)
+					linkIRCode(createIRCodeNode(IR_ADD), temp, opt1, opt2, "/");
+			}
+			else if(strcmp(node->child[1]->strval, "AND") == 0 || strcmp(node->child[1]->strval, "OR") == 0 || strcmp(node->child[1]->strval, "RELOP") == 0) {
+				Operand * labelTRUE = createOperand(OP_LABEL, "");
+				Operand * labelFALSE = createOperand(OP_LABEL, "");
+				Operand * zero = createOperand(OP_VARIABLE, "0");
+				Operand * one = createOperand(OP_VARIABLE, "1");
+				linkIRCode(createIRCodeNode(IR_ASSIGN), temp, zero, NULL, NULL);
+				translate_ExpConditional(node, labelTRUE, labelFALSE);
+				linkIRCode(createIRCodeNode(IR_LABEL), labelTRUE, NULL, NULL, NULL);
+				linkIRCode(createIRCodeNode(IR_ASSIGN), temp, one, NULL, NULL);
+				linkIRCode(createIRCodeNode(IR_LABEL), labelFALSE, NULL, NULL, NULL);
+			}
+			// call functions
+			else if(strcmp(node->child[0]->strval, "ID") == 0) {
+				char * funcName = node->child[0]->idval;
+				if(strcmp(funcName, "read") == 0) {
+					linkIRCode(createIRCodeNode(IR_READ), temp, NULL, NULL, NULL);
+				}
+                                Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
+                                linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
+			}
+			
+
+		}			
 			break;
 		//     | ID LP Args RP
 		//     | Exp LB Exp RB
 		case 4:
+			// func
+			if(strcmp(node->child[0]->strval, "ID") == 0) {
+                                char * funcName = node->child[0]->idval;
+				if(strcmp(funcName, "write") == 0) {
+					Operand * arg = createOperand(OP_TEMP, "");
+					arg = dereference(translate_Exp(node->child[2], OP_TEMP));
+					linkIRCode(createIRCodeNode(IR_WRITE), arg, NULL, NULL, NULL);
+					//TODO: write has returns to assign x=write(y)?
+				}
+				translate_Args(node->child[2]);
+				Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
+				linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
+			}
+			else if(strcmp(node->child[0]->strval, "Exp") == 0) {
+				Operand * baseArr = createOperand(OP_TEMP, "");
+				baseArr = translate_Exp(node->child[0], OP_TEMP);
+				Operand * index = createOperand(OP_TEMP, "");
+				index = translate_Exp(node->child[2], OP_TEMP);
+				Operand * elementsize = createOperand(OP_CONSTANT, "4");
+				Operand * offset = createOperand(OP_TEMP, "");
+				linkIRCode(createIRCodeNode(IR_MUL), offset, elementsize, index, "*");
+				if(temp->kind == OP_TEMP || temp->kind == OP_REF) {
+					temp->kind = OP_REF;
+					linkIRCode(createIRCodeNode(IR_ADD), temp, baseArr, offset, "+");
+				}	
+				else {
+					assert(temp->kind == OP_VARIABLE); // should be a variable so can be assigned
+					Operand * tempRef = createOperand(OP_TEMP, "");
+					tempRef->kind = OP_REF;
+					linkIRCode(createIRCodeNode(IR_ADD), tempRef, baseArr, offset, "+");
+					linkIRCode(createIRCodeNode(IR_DEREF_R), temp, tempRef, NULL, NULL);
+				}
+			}
 			break;
 	}	
 
 	return temp;
 }
-
 
 // Args : Exp COMMA Args 
 //     | Exp
