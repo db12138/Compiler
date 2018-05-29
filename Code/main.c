@@ -41,7 +41,7 @@ int main(int argc,char **argv)
 	yyparse();
 	if(!hasError)
 	{
-//	  DisplayTree(Root,0);
+	  DisplayTree(Root,0);
 //	  displaySymbolTable();
 	  checkAllStatement();
 	  translate_Program(Root);

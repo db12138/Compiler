@@ -140,6 +140,7 @@ void translate_Specifier(Node * node) {
 	assert(node != NULL);
 	switch(node->type) {
 		case 2: // int
+			printf("In Specifier It's int\n");
 			break;
 		case 3: // float
 			IRError = TRUE;
@@ -189,9 +190,10 @@ void translate_Tag(Node * node) {
 //    | VarDec LB INT RB
 char * translate_VarDec(Node * node, BOOL isParam) {
 	assert(node != NULL);
-
+	
+		printf("In VarDec, nodetype = %d childtype = %d\n", node->type, node->child[0]->type);
 	// ID
-	if(node->type == 4) {
+	if(node->child[0]->type == 4) {
 		if(isParam == TRUE) {
 			char * newname = malloc(BUFFERSIZE);
 			sprintf(newname, "v%d", definedVarCount++);
@@ -200,7 +202,8 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 			IRCode * ircode = createIRCodeNode(IR_PARAM);
 			linkIRCode(ircode, operand, NULL, NULL, NULL);			
 		}
-		return node->strval;
+		printf("in VarDec, child idval %s\n", node->child[0]->idval);
+		return node->child[0]->idval;
 	}
 	// Array, one dimension 
 	else {
@@ -343,7 +346,7 @@ void translate_ExpConditional(Node * node, Operand * labelTRUE, Operand * labelF
 //     | WHILE LP Exp RP Stmt
 void translate_Stmt(Node * node) {
 	assert(node != NULL);
-	
+	printf("In Stmt\n");
 	switch(node->childnum) {
 		//     | CompSt
 		case 1:
@@ -351,7 +354,9 @@ void translate_Stmt(Node * node) {
 			break;
 		//     | Exp SEMI
 		case 2:
+			printf("In Stmt, Exp SEMI\n");
 			translate_Exp(node->child[0], OP_NOP);
+			printf("end Exp SEMI \n");
 			break;
 		//     | RETURN Exp SEMI
 		case 3: {
@@ -366,6 +371,7 @@ void translate_Stmt(Node * node) {
 		//     | WHILE LP Exp RP Stmt
 		case 5:
 			if(strcmp(node->child[0]->strval, "IF") == 0) {
+				printf("In Stmt if not else\n");
 				Operand * labelTRUE = createOperand(OP_LABEL, "");
 				Operand * labelFALSE = createOperand(OP_LABEL, "");
 				translate_ExpConditional(node->child[2], labelTRUE, labelFALSE);
@@ -431,7 +437,7 @@ void translate_DefList(Node * node) {
 // Def : Specifier DecList SEMI 
 void translate_Def(Node * node) {
 	assert(node != NULL);
-	
+	printf("In Def\n");	
 	translate_Specifier(node->child[0]);
 	translate_DecList(node->child[1]);
 }
@@ -439,6 +445,7 @@ void translate_Def(Node * node) {
 // DecList : Dec
 //    | Dec COMMA DecList 
 void translate_DecList(Node * node) {
+	printf("In DecList\n");
 	if(node->childnum == 1) {
 		translate_Dec(node->child[0]);
 	}
@@ -454,12 +461,17 @@ void translate_DecList(Node * node) {
 //     | VarDec ASSIGNOP Exp
 void translate_Dec(Node * node) {
 	assert(node != NULL);
-
+		
+	printf("In Dec, childnum = %d\n", node->childnum);
 	char * vardec = translate_VarDec(node->child[0], FALSE);
 	
+		printf("In Dec, %s\n", vardec);
 	if(node->childnum == 3) {
+
 		// local ID Definitions, so dont generate inter codes
 		if(vardec != NULL) {
+			
+			printf("In Dec, VarDec != NULL\n");
 			//char * newname = malloc(BUFFERSIZE);
                         //sprintf(newname, "v%d", definedVarCount++);
 			//Operand * operand = createOperand(OP_VARIABLE, newname);
@@ -470,8 +482,9 @@ void translate_Dec(Node * node) {
 			;	
 		}
 	}
+	// VarDec
 	else {
-		Assert("Should not be here.", __FILE__, __LINE__);
+		return ;
 	}
 }
 
@@ -506,13 +519,13 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 		case OP_TEMP:
 			temp = createOperand(OP_TEMP, "");
 			break;
+		case OP_NOP:
 		case OP_VARIABLE:{
 			char * newname = malloc(BUFFERSIZE);
                         sprintf(newname, "v%d", definedVarCount++);
 			temp = createOperand(OP_VARIABLE, newname);
 			break;
 		}
-		case OP_NOP:
 		case OP_REF:
 			break;
 		default:
@@ -550,17 +563,18 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 			else if(strcmp(node->child[0]->strval, "INT") == 0) {
 				if(kind == OP_TEMP || kind == OP_REF) {
 					temp->kind = OP_CONSTANT;
-					sprintf(temp->symbolName, "#%d", node->intval);
+					sprintf(temp->symbolName, "%d", node->child[0]->intval);
 				}
 				else {
 					IRCode * ircode = createIRCodeNode(IR_ASSIGN);
 					char * constant = malloc(BUFFERSIZE);
-					sprintf(constant, "#%d", node->intval);
+					sprintf(constant, "%d", node->intval);
 					Operand * opt = createOperand(OP_CONSTANT, constant);
 					linkIRCode(ircode, temp, opt, NULL, NULL);
 				}
 			}
 			else {
+				printf("%s\n",node->child[0]->strval);
 				IRError = TRUE;
 				fprintf(stderr, "Float variable is not allowed.\n");
 				return NULL;
@@ -603,34 +617,36 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 		//     | Exp DOT ID  TODO
 		case 3: {
 			// ASSIGN
-			if(strcmp(node->child[0]->strval, "ASSIGNOP") == 0) {
+			if(strcmp(node->child[1]->strval, "ASSIGNOP") == 0) {
+			printf("In Exp ASSIGN\n");
 				IRCode * irAssign = NULL;
 				Operand * operand = createOperand(OP_TEMP, "");
 				operand = translate_Exp(node->child[0], OP_TEMP);
+				printf("left operand end , %s\n", operand->symbolName);
 				switch(operand->kind) {
 					case OP_VARIABLE:
-					case OP_TEMP:
+					case OP_TEMP:	
 						operand = translate_Exp(node->child[2], OP_TEMP);
+                	                        IRCode * ircode = createIRCodeNode(IR_ASSIGN);
+        	                                operand = dereference(operand);
+	                                        linkIRCode(ircode, temp, operand, NULL, NULL);
 						break;
 					case OP_REF: {
 						Operand * opt2 = createOperand(OP_TEMP, "");
 						opt2 = translate_Exp(node->child[2], OP_TEMP);
-						IRCode * ircode = createIRCodeNode(IR_DEREF_L);
+						IRCode * ircode1 = createIRCodeNode(IR_DEREF_L);
 						opt2 = dereference(opt2);
-						linkIRCode(ircode, operand, opt2, NULL, NULL);
+						linkIRCode(ircode1, operand, opt2, NULL, NULL);
+                	                        IRCode * ircode2 = createIRCodeNode(IR_ASSIGN);
+        	                                operand = dereference(operand);
+	                                        linkIRCode(ircode, temp, operand, NULL, NULL);
 						break;
 					}
 					default:	
 						Assert("Not here.", __FILE__, __LINE__);
 				}
-				if(temp->kind == OP_TEMP) {
-					temp->kind = operand->kind;
-				}
-				else {
-					assert(temp->kind == OP_VARIABLE);
-					IRCode * ircode = createIRCodeNode(IR_ASSIGN);
-					operand = dereference(operand);
-					linkIRCode(ircode, temp, operand, NULL, NULL);
+				if(temp == NULL) {
+					return NULL;
 				}
 			}
 			// PLUS / SUB / STAR / DIV
@@ -663,12 +679,20 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 			}
 			// call functions
 			else if(strcmp(node->child[0]->strval, "ID") == 0) {
+				printf("In Exp call functions\n");
 				char * funcName = node->child[0]->idval;
 				if(strcmp(funcName, "read") == 0) {
-					linkIRCode(createIRCodeNode(IR_READ), temp, NULL, NULL, NULL);
+					printf("call read\n");
+					Operand * op = createOperand(OP_TEMP, "");
+					linkIRCode(createIRCodeNode(IR_READ), op, NULL, NULL, NULL);
+					printf("call read end\n");
+					return op;
+				} else {
+                                	Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
+					Operand * op = createOperand(OP_TEMP, "");
+                                        linkIRCode(createIRCodeNode(IR_CALL), op, opfunc, NULL, NULL);
+					return op;
 				}
-                                Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
-                                linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
 			}
 			
 
@@ -679,16 +703,18 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 		case 4:
 			// func
 			if(strcmp(node->child[0]->strval, "ID") == 0) {
+				printf("In Exp : ID LP Args RP\n");
                                 char * funcName = node->child[0]->idval;
 				if(strcmp(funcName, "write") == 0) {
 					Operand * arg = createOperand(OP_TEMP, "");
-					arg = dereference(translate_Exp(node->child[2], OP_TEMP));
+					arg = translate_Args(node->child[2]);
 					linkIRCode(createIRCodeNode(IR_WRITE), arg, NULL, NULL, NULL);
 					//TODO: write has returns to assign x=write(y)?
+				} else {
+					translate_Args(node->child[2]);
+					Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
+					linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
 				}
-				translate_Args(node->child[2]);
-				Operand * opfunc = createOperand(OP_FUNCTION, node->child[0]->idval);
-				linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
 			}
 			else if(strcmp(node->child[0]->strval, "Exp") == 0) {
 				Operand * baseArr = createOperand(OP_TEMP, "");
@@ -718,8 +744,17 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 
 // Args : Exp COMMA Args 
 //     | Exp
-void translate_Args(Node * node) {
-
+Operand * translate_Args(Node * node) {
+	if(node->childnum == 1) {
+		Operand * op = translate_Exp(node->child[0], OP_TEMP);
+		return op;
+	}
+	else {
+		//TODO: this is not correct!!!
+                Operand * op = translate_Exp(node->child[0], OP_TEMP);
+		translate_Args(node->child[2]);
+		return NULL;
+	}
 }
 
 
