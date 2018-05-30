@@ -81,13 +81,8 @@ void linkIRCode(IRCode * IR, Operand * result, Operand * opt1, Operand * opt2, c
 	IRListTail = IR;
 }
 
-void addOperandList(Operand * operand) {
-	
-}
-
 void initAll() {
 	if(IRListHead == NULL) {
-		operandList = createOperand(OP_NOP, "");
 		IRListHead = createIRCodeNode(IR_NOP);
 		IRListTail = IRListHead;
 	}
