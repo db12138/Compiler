@@ -110,7 +110,10 @@ void translate_ExtDefList(Node * node) {
 //     | Specifier FunDec CompSt
 void translate_ExtDef(Node * node) {
 	assert(node != NULL);
-	if(strcmp("SEMI", node->child[1]->strval)==0 || strcmp("ExtDecList", node->child[1]->strval)==0) {
+	if(strcmp("SEMI", node->child[1]->strval)==0) {
+			translate_Specifier(node->child[0]);
+	}
+	else if(strcmp("ExtDecList", node->child[1]->strval)==0) {
 		translate_Specifier(node->child[0]);
 		translate_ExtDecList(node->child[1]);
 	}
@@ -450,6 +453,7 @@ void translate_DecList(Node * node) {
 		translate_Dec(node->child[0]);
 	}
 	else if(node->childnum == 3) {
+		translate_Dec(node->child[0]);
 		translate_DecList(node->child[2]);
 	}
 	else {
@@ -472,10 +476,11 @@ void translate_Dec(Node * node) {
 		if(vardec != NULL) {
 			
 			printf("In Dec, VarDec != NULL\n");
-			//char * newname = malloc(BUFFERSIZE);
-                        //sprintf(newname, "v%d", definedVarCount++);
-			//Operand * operand = createOperand(OP_VARIABLE, newname);
-			translate_Exp(node->child[2], OP_VARIABLE);
+			char * newname = malloc(BUFFERSIZE);
+                        sprintf(newname, "v%d", definedVarCount++);
+			Operand * operand = createOperand(OP_VARIABLE, newname);
+			Operand * op = translate_Exp(node->child[2], OP_TEMP);
+			linkIRCode(createIRCodeNode(IR_ASSIGN), operand, op, NULL, NULL);
 		}
 		// local array
 		else {
@@ -563,12 +568,12 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 			else if(strcmp(node->child[0]->strval, "INT") == 0) {
 				if(kind == OP_TEMP || kind == OP_REF) {
 					temp->kind = OP_CONSTANT;
-					sprintf(temp->symbolName, "%d", node->child[0]->intval);
+					sprintf(temp->symbolName, "#%d", node->child[0]->intval);
 				}
 				else {
 					IRCode * ircode = createIRCodeNode(IR_ASSIGN);
 					char * constant = malloc(BUFFERSIZE);
-					sprintf(constant, "%d", node->intval);
+					sprintf(constant, "%d", node->child[0]->intval);
 					Operand * opt = createOperand(OP_CONSTANT, constant);
 					linkIRCode(ircode, temp, opt, NULL, NULL);
 				}
@@ -651,6 +656,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 			}
 			// PLUS / SUB / STAR / DIV
 			else if(strcmp(node->child[1]->strval, "PLUS") == 0 || strcmp(node->child[1]->strval, "MINUS") == 0 || strcmp(node->child[1]->strval, "STAR") == 0 || strcmp(node->child[1]->strval, "DIV") == 0) {
+				
 				Operand * opt1 = createOperand(OP_TEMP, "");
                                 Operand * opt2 = createOperand(OP_TEMP, "");
 				opt1 = translate_Exp(node->child[0], OP_TEMP);

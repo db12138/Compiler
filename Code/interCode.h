@@ -22,6 +22,7 @@ typedef struct Operand_ {
 	BOOL isParam;
 } Operand;
 
+
 typedef enum IRKind_ {
 	IR_NOP,     // just used for begin
 	IR_LABEL,   // LABEL result :

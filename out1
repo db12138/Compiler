@@ -1,0 +1,24 @@
+ FUNCTION fact : 
+ PARAM v1 
+ IF t3 RELOP 1 GOTO label1 
+ GOTO label2 
+ LABEL label1 : 
+ RETURN t6 
+ GOTO label3 
+ LABEL label2 : 
+ RETURN t8 
+ LABEL label3 : 
+ FUNCTION main : 
+ READ t12 
+ v4 := t12 
+ IF t15 RELOP 1 GOTO label4 
+ GOTO label5 
+ LABEL label4 : 
+ t19 := CALL fact 
+ v7 := t19 
+ GOTO label6 
+ LABEL label5 : 
+ v10 := 1 
+ LABEL label6 : 
+ WRITE t25 
+ RETURN 0 
