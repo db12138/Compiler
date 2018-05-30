@@ -1,0 +1,27 @@
+ FUNCTION main : 
+ v1 := 3 
+ v2 := 4 
+ t8 := t11 + t12 
+ t13 := t16 + t17 
+ t5 := t8 + t13 
+ v3 := t5 
+ WRITE t19 
+ t22 := t25 + t26 
+ v11 := t22 
+ WRITE t28 
+ t31 := t34 + t35 
+ v16 := t31 
+ t38 := t41 + t42 
+ v20 := t38 
+ t45 := t48 + t49 
+ v24 := t45 
+ t52 := t55 + t56 
+ v28 := t52 
+ t59 := t62 + t63 
+ v32 := t59 
+ t70 := t73 + t74 
+ t66 := t69 + t70 
+ v36 := t66 
+ WRITE t76 
+ WRITE t78 
+ RETURN 0 

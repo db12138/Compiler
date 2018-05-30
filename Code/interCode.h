@@ -19,8 +19,11 @@ typedef struct Operand_ {
 	// symbolName : func/var/tempvar... is name only, for int is form of ' #value'.
 	char symbolName[BUFFERSIZE];
 	// classify VarDec ID
+	Operand * next;
 	BOOL isParam;
 } Operand;
+
+Operand * operandList;
 
 typedef enum IRKind_ {
 	IR_NOP,     // just used for begin
