@@ -92,6 +92,7 @@ Operand * translate_Exp(Node * node, OperandKind kind);
 void translate_DecList(Node * node);
 void translate_Dec(Node * node);
 Operand * translate_Args(Node * node);
+Operand * translate_Args_write(Node * node);
 
 
 

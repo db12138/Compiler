@@ -17,7 +17,7 @@ typedef struct Type_
 }Type_;
 typedef struct FieldList_
 {
-	char name[50];
+	char name[100];
 	int linenum;
 	Type type;
 	FieldList tail;
@@ -52,4 +52,5 @@ typedef struct Dtype
 	int linenum;
 }Dtype;
 
+void addirTable( char *name ,Type_ type);
 #endif

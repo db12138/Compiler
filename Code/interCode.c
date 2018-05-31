@@ -141,7 +141,17 @@ void translate_ExtDecList(Node * node) {
 //    | StructSpecifier
 void translate_Specifier(Node * node) {
 	assert(node != NULL);
-	switch(node->type) {
+	if(strcmp(node->child[0]->strval,"TYPE") == 0)
+	{
+		//Do nothing
+	}
+	else //StructSpecifier
+	{
+		translate_StructSpecifier(node->child[0]);
+		node->inhtype = node->child[0]->inhtype;
+	}
+
+	/*switch(node->type) {
 		case 2: // int
 			break;
 		case 3: // float
@@ -150,20 +160,49 @@ void translate_Specifier(Node * node) {
 			break;
 		case 0: //TODO: struct??? 
 			break;
-	}	
+	}*/	
 }
 
 // StructSpecifier : STRUCT OptTag LC DefList RC
 //    | STRUCT Tag
+FieldList DefListStruct(Node *);
+int getStructSize(Type_);
+Stype* checkStruct(char *);
+FieldList addStruct(Stype);
+void displayType(Type_);
 void translate_StructSpecifier(Node * node) {
 	assert(node != NULL);
 	// struct defination
 	if(node->childnum == 5) {
-		// TODO：这里应该有判断struct里面有多少个变量
-		// TODO: 让DefList返回变量个数
+		Type_ newType;
+		newType.kind = STRUCTURE;
+		newType.u.structure = DefListStruct(node->child[3]);
+		node->inhtype = newType;
+
+		if(node->child[1]->child[0] != NULL)
+		{
+			char *sname = node->child[1]->child[0]->idval;
+			Stype newStruct;
+			strcpy(newStruct.structname,sname);
+			newStruct.structtype = newType;
+			addStruct(newStruct);
+		}
 		return;
 	}
 	else {
+		char * id = node->child[1]->child[0]->idval;
+
+		Stype* stype = checkStruct(id);
+		if(stype == NULL)
+		{
+			fprintf(stderr," struct : %s not defined\n",id);
+		}
+		else
+		{
+			node->inhtype = stype->structtype;
+		}
+		//Operand * sizeStruct = createOperand(OP_CONSTANT,size);
+		//linkIRCode(createIRCodeNode(IR_DEC),decStruct,sizeStruct,NULL,NULL);
 		// new IRNode and new result just like : DEC v3 8 t9 := &v3
 		;
 	}
@@ -194,6 +233,24 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 	assert(node != NULL);
 	
 		//printf("In VarDec, nodetype = %d childtype = %d\n", node->type, node->child[0]->type);
+	//Struct Type ADD TO irTable
+	
+	if(node->childnum == 1 && node->inhtype.kind == STRUCTURE) 
+	{
+		addirTable(node->child[0]->idval,node->inhtype);
+		Operand *re = createOperand(OP_VARIABLE,node->child[0]->idval);
+		
+		char *size = malloc(128);
+		int s = getStructSize(node->inhtype);
+		sprintf(size,"%d",s);
+
+		Operand *op1 = createOperand(OP_CONSTANT,size);
+		linkIRCode(createIRCodeNode(IR_DEC),re,op1,NULL,NULL);
+	}
+	else if(node->childnum==4)
+	{
+		node->child[0]->inhtype = node->inhtype;
+	}
 	// ID
 	if(node->child[0]->type == 4) {
 		if(isParam == TRUE) {
@@ -436,6 +493,7 @@ void translate_Def(Node * node) {
 	assert(node != NULL);
 	//printf("In Def\n");	
 	translate_Specifier(node->child[0]);
+	node->child[1]->inhtype = node->child[0]->inhtype;
 	translate_DecList(node->child[1]);
 }
 
@@ -443,11 +501,13 @@ void translate_Def(Node * node) {
 //    | Dec COMMA DecList 
 void translate_DecList(Node * node) {
 	//printf("In DecList\n");
+	node->child[0]->inhtype = node->inhtype;
 	if(node->childnum == 1) {
 		translate_Dec(node->child[0]);
 	}
 	else if(node->childnum == 3) {
 		translate_Dec(node->child[0]);
+		node->child[2]->inhtype = node->inhtype;
 		translate_DecList(node->child[2]);
 	}
 	else {
@@ -460,6 +520,7 @@ void translate_DecList(Node * node) {
 void translate_Dec(Node * node) {
 	assert(node != NULL);
 		
+	node->child[0]->inhtype = node->inhtype;
 	//printf("In Dec, childnum = %d\n", node->childnum);
 	char * vardec = translate_VarDec(node->child[0], FALSE);
 	
@@ -504,7 +565,8 @@ void translate_Dec(Node * node) {
 //     | ID
 //     | INT
 //     | FLOAT
-
+char *getFieldOffset(Type,char *);
+Type getVarType(char *);
 Operand * translate_Exp(Node * node, OperandKind kind) {
 	assert(node != NULL);
 	
@@ -608,8 +670,40 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 		//     | ID LP RP
 		//     | Exp DOT ID  TODO
 		case 3: {
+			if(strcmp(node->child[1]->strval,"DOT") == 0)
+			{
+				if(strcmp(node->child[0]->child[0]->strval,"ID") == 0)
+				{
+					char *newname = malloc(BUFFERSIZE);
+					Operand *re = createOperand(OP_TEMP,newname);
+					re->kind = OP_REF;
+					char *varname = node->child[0]->child[0]->idval;
+					Operand *base = createOperand(OP_VARIABLE,varname);
+
+					Type vtype = getVarType(varname);
+					if(vtype == NULL)
+					{
+						fprintf(stderr,"should not happen,%s,%d\n",__FILE__,__LINE__);
+					}
+					else if(vtype->kind != STRUCTURE)
+					{
+						fprintf(stderr,"not struct\n");
+					}
+
+					char *fieldName = node->child[2]->idval;
+					char *offs = getFieldOffset(vtype,fieldName);
+					Operand *offset = createOperand(OP_CONSTANT,offs);
+					
+					linkIRCode(createIRCodeNode(IR_REF),re,base,offset,NULL);
+					return re;
+				}
+				else
+				{
+					fprintf(stderr,"linenum:%d ,Exp DOT need todo\n",node->linenum);
+				}
+			}
 			// ASSIGN
-			if(strcmp(node->child[1]->strval, "ASSIGNOP") == 0) {
+			else if(strcmp(node->child[1]->strval, "ASSIGNOP") == 0) {
 				IRCode * irAssign = NULL;
 				Operand * operandL = createOperand(OP_TEMP, "");
 				operandL = translate_Exp(node->child[0], OP_TEMP);
@@ -698,7 +792,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
                                 char * funcName = node->child[0]->idval;
 				if(strcmp(funcName, "write") == 0) {
 					Operand * arg = createOperand(OP_TEMP, "");
-					arg = translate_Args(node->child[2]);
+					arg = translate_Args_write(node->child[2]);
 					arg = dereference(arg);
 					linkIRCode(createIRCodeNode(IR_WRITE), arg, NULL, NULL, NULL);
 					//TODO: write has returns to assign x=write(y)?
@@ -737,6 +831,19 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 // Args : Exp COMMA Args 
 //     | Exp
 Operand * translate_Args(Node * node) {
+	if(node->childnum == 1) {
+		Operand * op = translate_Exp(node->child[0], OP_TEMP);
+		linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
+		return op;
+	}
+	else {
+		translate_Args(node->child[2]);
+        Operand * op = translate_Exp(node->child[0], OP_TEMP);
+		linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
+		return NULL;
+	}
+}
+Operand * translate_Args_write(Node * node) {
 	if(node->childnum == 1) {
 		Operand * op = translate_Exp(node->child[0], OP_TEMP);
 		return op;

@@ -1,6 +1,7 @@
 #include "symbolTable.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "debug.h"
 Vtype vartable[1000];
 int varnum;
@@ -11,20 +12,69 @@ int structnum;
 Dtype dectable[600];
 int decnum;
 
+Vtype irTable[100];
+int irtnum;
+
 void displayType(Type_ var);
 int IsTypeEqual(Type_,Type_);
 Type checkVar(char *varname);
 void errorPrint(int ,int ,char *);
 int checkDecParamList(FieldList p1,FieldList p2);
 int checkDec(Dtype new,int DOS);
+int getTypeSize(Type_ );
 Ftype * checkFun(char *funname);
 
+void addirTable( char *name ,Type_ type)
+{
+	int cur = irtnum++;
+	strcpy(irTable[cur].name,name);
+	irTable[cur].type = malloc(sizeof(struct Type_));
+	*irTable[cur].type = type;
+}
+Type getVarType(char *vname)
+{
+	int i=0;
+	for(;i<irtnum;i++)
+	{
+		if(strcmp(vname,irTable[i].name) == 0)
+		{
+			return irTable[i].type;
+		}
+	}
+	return NULL;
+}
+char * getFieldOffset(Type stype,char *fname)
+{
+	if(stype == NULL)
+	{
+		return "#0";
+	}
+	int offset = 0;
+	FieldList head = stype->u.structure;
+	for(;head != NULL;head = head->tail)
+	{
+		if(strcmp(fname,head->name)==0)
+		{
+			char *re = malloc(64);
+			sprintf(re,"#%d",offset);
+			return re;
+		}
+		else
+		{
+			offset+=getTypeSize(*head->type);
+		}
+	}
+	char *re = malloc(64);
+	sprintf(re,"#%d",offset);
+	return re;
+}
 void initTable()
 {
 	varnum = 0;
 	funnum = 0;
 	structnum = 0;
 	decnum = 0;
+	irtnum = 0;
 }
 void displayDtable()
 {
@@ -160,6 +210,66 @@ Stype* checkStruct(char *name)
 		}
 	}
 	return NULL;
+}
+int getArraySize(Type_ ar)
+{
+	if(ar.kind == BASIC)
+	{
+		return 4;
+	}
+	else if(ar.kind==ARRAY)
+	{
+
+		int a =getArraySize(*ar.u.array.elem);
+		int b = ar.u.array.size;
+		return  a*b;
+	}
+	else
+	{
+		return 0;
+	}
+}
+int getStructSize(Type_ st)
+{
+	if(st.kind != STRUCTURE)
+	{
+		return 0;
+	}
+	int size = 0;
+	FieldList head = st.u.structure;
+	for(;head!=NULL;head=head->tail)
+	{
+		Type cur = head->type;
+		if(cur->kind == BASIC)
+		{
+			size+=4;
+		}
+		else if(cur->kind == ARRAY)
+		{
+			size+=getArraySize(*cur);
+		}
+		else
+		{
+			size+=getStructSize(*cur);
+		}
+	}
+	return size;
+
+}
+int getTypeSize(Type_ type)
+{
+	if(type.kind == BASIC)
+	{
+		return 4;
+	}
+	else if(type.kind==ARRAY)
+	{
+		return getArraySize(type);
+	}
+	else
+	{
+		return getStructSize(type);
+	}
 }
 int checkRedef(char *name)
 {
