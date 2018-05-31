@@ -1,34 +1,3 @@
  FUNCTION main : 
- a := #3 
- b := #4 
- t8 := a * a 
- t13 := b * b 
- t5 := t8 + t13 
- c := t5 
- WRITE c 
- t26 := a + c 
- t22 := t26 / b 
- c := t22 
- WRITE c 
- t36 := a + b 
- c := t36 
- t43 := a + b 
- a := t43 
- t50 := a - b 
- b := t50 
- t57 := a - b 
- a := t57 
- t64 := a - b 
- c := t64 
- t82 := a - b 
- t78 := t82 * #2 
- t75 := t78 - #1 
- t93 := a / b 
- t104 := #3 + b 
- t99 := #2 * t104 
- t89 := t93 * t99 
- t71 := t75 + t89 
- b := t71 
- WRITE a 
- WRITE b 
+ DEC a 12 
  RETURN #0 
