@@ -107,7 +107,7 @@ float 		([0-9]*\.[0-9]+|[0-9]+\.[0-9]*)([Ee][+-]?[0-9]+)?
 ";" 				{yylval.type_node=NewNode("SEMI",yylineno);return SEMI;}
 "," 				{yylval.type_node=NewNode("COMMA",yylineno);return COMMA;}
 "=" 				{yylval.type_node=NewNode("ASSIGNOP",yylineno);return ASSIGNOP;}
-{relop} 			{yylval.type_node=NewNode("RELOP",yylineno);return RELOP;}
+{relop} 			{yylval.type_node=NewNodeId("RELOP",yytext,yylineno);return RELOP;}
 "&&" 				{yylval.type_node=NewNode("AND",yylineno);return AND;}
 "||" 				{yylval.type_node=NewNode("OR",yylineno);return OR;}
 "." 				{yylval.type_node=NewNode("DOT",yylineno);return DOT;}

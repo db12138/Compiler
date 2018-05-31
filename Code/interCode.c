@@ -319,7 +319,7 @@ void translate_ExpConditional(Node * node, Operand * labelTRUE, Operand * labelF
 		opt1 = dereference(opt1);
 		opt2 = dereference(opt2);
 		IRCode * ircodeTrue = createIRCodeNode(IR_IF_GOTO);
-		linkIRCode(ircodeTrue, labelTRUE, opt1, opt2, node->child[1]->strval);
+		linkIRCode(ircodeTrue, labelTRUE, opt1, opt2, node->child[1]->idval);
 		IRCode * ircodeFalse = createIRCodeNode(IR_GOTO);
 		linkIRCode(ircodeFalse, labelFALSE, NULL, NULL, NULL);
 		return ;
