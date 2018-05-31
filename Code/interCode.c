@@ -48,7 +48,7 @@ Operand * createOperand(OperandKind kind, char * symbolName) {
 			sprintf(operand->symbolName, "%s", symbolName);
 			break;
 		case OP_CONSTANT:
-			sprintf(operand->symbolName, "#%s", symbolName);
+			sprintf(operand->symbolName, "%s", symbolName);
 			break;
 		case OP_LABEL:
 			operand->u.var_no = labelsCount++;
@@ -227,7 +227,7 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 		// local defination , DEC array size
 		else {
 			char * Sintval = malloc(BUFFERSIZE);
-			sprintf(Sintval, "%d", node->child[2]->intval);
+			sprintf(Sintval, "%d", 4*node->child[2]->intval);
 			Operand * size = createOperand(OP_CONSTANT, Sintval);
 			Operand * arr = createOperand(OP_REF, name);
 			IRCode * ircode = createIRCodeNode(IR_DEC);
@@ -563,7 +563,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				else {
 					IRCode * ircode = createIRCodeNode(IR_ASSIGN);
 					char * constant = malloc(BUFFERSIZE);
-					sprintf(constant, "%d", node->child[0]->intval);
+					sprintf(constant, "#%d", node->child[0]->intval);
 					Operand * opt = createOperand(OP_CONSTANT, constant);
 					linkIRCode(ircode, temp, opt, NULL, NULL);
 				}
@@ -714,7 +714,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				baseArr = translate_Exp(node->child[0], OP_TEMP);
 				Operand * index = createOperand(OP_TEMP, "");
 				index = translate_Exp(node->child[2], OP_TEMP);
-				Operand * elementsize = createOperand(OP_CONSTANT, "4");
+				Operand * elementsize = createOperand(OP_CONSTANT, "#4");
 				Operand * offset = createOperand(OP_TEMP, "");
 				linkIRCode(createIRCodeNode(IR_MUL), offset, elementsize, index, "*");
 				if(temp->kind == OP_TEMP || temp->kind == OP_REF) {
