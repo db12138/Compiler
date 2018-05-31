@@ -1,27 +1,34 @@
  FUNCTION main : 
- v1 := 3 
- v2 := 4 
- t8 := t11 + t12 
- t13 := t16 + t17 
+ a := #3 
+ b := #4 
+ t8 := a * a 
+ t13 := b * b 
  t5 := t8 + t13 
- v3 := t5 
- WRITE t19 
- t22 := t25 + t26 
- v11 := t22 
- WRITE t28 
- t31 := t34 + t35 
- v16 := t31 
- t38 := t41 + t42 
- v20 := t38 
- t45 := t48 + t49 
- v24 := t45 
- t52 := t55 + t56 
- v28 := t52 
- t59 := t62 + t63 
- v32 := t59 
- t70 := t73 + t74 
- t66 := t69 + t70 
- v36 := t66 
- WRITE t76 
- WRITE t78 
- RETURN 0 
+ c := t5 
+ WRITE c 
+ t26 := a + c 
+ t22 := t26 / b 
+ c := t22 
+ WRITE c 
+ t36 := a + b 
+ c := t36 
+ t43 := a + b 
+ a := t43 
+ t50 := a - b 
+ b := t50 
+ t57 := a - b 
+ a := t57 
+ t64 := a - b 
+ c := t64 
+ t82 := a - b 
+ t78 := t82 * #2 
+ t75 := t78 - #1 
+ t93 := a / b 
+ t104 := #3 + b 
+ t99 := #2 * t104 
+ t89 := t93 * t99 
+ t71 := t75 + t89 
+ b := t71 
+ WRITE a 
+ WRITE b 
+ RETURN #0 
