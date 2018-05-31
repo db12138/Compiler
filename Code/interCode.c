@@ -197,9 +197,7 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 	// ID
 	if(node->child[0]->type == 4) {
 		if(isParam == TRUE) {
-			char * newname = malloc(BUFFERSIZE);
-			sprintf(newname, "v%d", definedVarCount++);
-			Operand * operand = createOperand(OP_VARIABLE, newname);
+			Operand * operand = createOperand(OP_VARIABLE, node->child[0]->idval);
 			operand->isParam = TRUE;
 			IRCode * ircode = createIRCodeNode(IR_PARAM);
 			linkIRCode(ircode, operand, NULL, NULL, NULL);			
