@@ -626,15 +626,15 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 						break;
 					}
 					case OP_REF: {
-						Operand * operandT = createOperand(OP_TEMP, "");
-						Operand * opt2 = createOperand(OP_TEMP, "");
-						opt2 = translate_Exp(node->child[2], OP_TEMP);
+						//Operand * operandT = createOperand(OP_TEMP, "");
+						//Operand * opt2 = createOperand(OP_TEMP, "");
+						Operand* opt2 = translate_Exp(node->child[2], OP_TEMP);
 						IRCode * ircode1 = createIRCodeNode(IR_DEREF_L);
 						opt2 = dereference(opt2);
-						linkIRCode(ircode1, operandT, opt2, NULL, NULL);
-                	                        IRCode * ircode2 = createIRCodeNode(IR_ASSIGN);
-        	                                operandT = dereference(operandT);
-	                                        linkIRCode(ircode2, operandL, operandT, NULL, NULL);
+						linkIRCode(ircode1, operandL, opt2, NULL, NULL);
+                	                   //     IRCode * ircode2 = createIRCodeNode(IR_ASSIGN);
+        	                             //   operandT = dereference(operandT);
+	                                      //  linkIRCode(ircode2, operandL, operandT, NULL, NULL);
 						break;
 					}
 					default:	
@@ -701,6 +701,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				if(strcmp(funcName, "write") == 0) {
 					Operand * arg = createOperand(OP_TEMP, "");
 					arg = translate_Args(node->child[2]);
+					arg = dereference(arg);
 					linkIRCode(createIRCodeNode(IR_WRITE), arg, NULL, NULL, NULL);
 					//TODO: write has returns to assign x=write(y)?
 				} else {
