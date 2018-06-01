@@ -5,7 +5,7 @@
 CC = gcc
 FLEX = flex
 BISON = bison
-CFLAGS = -std=c99 -g -lfl 
+CFLAGS = -std=c99 -g -rdynamic -lfl 
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Darwin)
 	CFLAGS += -L/usr/local/Cellar/flex/2.6.4/lib/
