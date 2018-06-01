@@ -179,7 +179,6 @@ void translate_StructSpecifier(Node * node) {
 		newType.kind = STRUCTURE;
 		newType.u.structure = DefListStruct(node->child[3]);
 		node->inhtype = newType;
-
 		if(node->child[1]->child[0] != NULL)
 		{
 			char *sname = node->child[1]->child[0]->idval;
@@ -226,7 +225,7 @@ void translate_Tag(Node * node) {
 
 ///////////////////////////////////////////////////////////////
 
-
+int getStructSize(Type_);
 
 int getTypeSize(Type_);
 // VarDec : ID
@@ -580,6 +579,7 @@ void translate_Dec(Node * node) {
 //     | FLOAT
 char *getFieldOffset(Type,char *);
 Type getVarType(char *);
+Type getFieldListType(Type_ ,char *);
 Operand * translate_Exp(Node * node, OperandKind kind) {
 	assert(node != NULL);
 	
@@ -693,7 +693,6 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					re->kind = OP_REF;
 					char *varname = node->child[0]->child[0]->idval;
 					Operand *base = createOperand(OP_VARIABLE,varname);
-
 					Type vtype = getVarType(varname);
 					if(vtype == NULL)
 					{
@@ -707,7 +706,9 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					char *fieldName = node->child[2]->idval;
 					char *offs = getFieldOffset(vtype,fieldName);
 					Operand *offset = createOperand(OP_CONSTANT,offs);
-					
+					Type t = getFieldListType(*vtype,fieldName);
+					if(t != NULL)
+						node->inhtype  = *t;
 					linkIRCode(createIRCodeNode(IR_REF),re,base,offset,NULL);
 					return re;
 				}
@@ -716,14 +717,23 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					Operand * basic = translate_Exp(node->child[0],OP_TEMP); 
 					
 					char *fieldName = node->child[2]->idval;
-					fprintf(stderr,"tp3:%s\n",fieldName);
+					//fprintf(stderr,"tp3:%s\n",fieldName);
 					char *offs = getFieldOffset(&node->child[0]->inhtype,fieldName);
-					displayType(node->child[0]->inhtype);
 					Operand *offset = createOperand(OP_CONSTANT,offs);
 					char *rname = malloc(BUFFERSIZE);
 					Operand *re = createOperand(OP_TEMP,rname);
 					linkIRCode(createIRCodeNode(IR_ADD),re,basic,offset,NULL);
+					Type t = getFieldListType(node->child[0]->inhtype,fieldName);
 					
+					//displayType(node->child[0]->inhtype);
+					if(t != NULL)
+					{
+						node->inhtype = *t;
+					}
+					else
+					{
+						fprintf(stderr,"tp4");
+					}
 					re->kind = OP_REF;
 					return re;
 					//fprintf(stderr,"linenum:%d ,Exp DOT need todo\n",node->linenum);
@@ -843,7 +853,8 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				Operand *offset = createOperand(OP_TEMP,ofname);
 
 				//getTypeSize()
-
+				
+				//displayType(node->child[0]->inhtype);
 				if(strcmp(node->child[0]->child[0]->strval,"ID")==0)
 				{
 					char *id = node->child[0]->child[0]->idval;
@@ -856,9 +867,13 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 						fprintf(stderr,"vartype NULL\n");
 					}
 				}
+				else if(node->child[0]->inhtype.kind == ARRAY)
+				{
+					//struct ARRAY
+				}
 				else
 				{
-					fprintf(stderr,"hign demension array occur\n");
+					//fprintf(stderr,"hign demension array occur\n");
 				}
 				
 				char *id = node->child[0]->child[0]->idval;

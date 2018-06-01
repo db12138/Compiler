@@ -23,13 +23,29 @@ int checkDecParamList(FieldList p1,FieldList p2);
 int checkDec(Dtype new,int DOS);
 int getTypeSize(Type_ );
 Ftype * checkFun(char *funname);
-
+int getStructSize(Type_);
 void addirTable( char *name ,Type_ type)
 {
 	int cur = irtnum++;
 	strcpy(irTable[cur].name,name);
 	irTable[cur].type = malloc(sizeof(struct Type_));
 	*irTable[cur].type = type;
+}
+Type getFieldListType(Type_ t,char *fieldName)
+{
+	if(t.kind != STRUCTURE)
+	{
+		return NULL;
+	}
+	FieldList head = t.u.structure;
+	for(;head != NULL;head = head->tail)
+	{
+		if(strcmp(fieldName,head->name)==0)
+		{
+			return head->type;
+		}
+	}
+	return NULL;
 }
 Type getVarType(char *vname)
 {
