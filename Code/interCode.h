@@ -32,6 +32,7 @@ typedef enum IRKind_ {
         IR_RETURN,  // RETURN result
         IR_PARAM,   // PARAM result
         IR_ARG,     // ARG result
+		IR_ARG_REF,
         
 	IR_ASSIGN,  // result := opt1
         

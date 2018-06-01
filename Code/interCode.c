@@ -849,14 +849,28 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 Operand * translate_Args(Node * node) {
 	if(node->childnum == 1) {
 		Operand * op = translate_Exp(node->child[0], OP_TEMP);
-		linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
+		if(op->kind == OP_REF)
+		{
+			linkIRCode(createIRCodeNode(IR_ARG_REF),op,NULL,NULL,NULL);
+		}
+		else
+		{
+			linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
+		}
 		return op;
 	}
 	else {
 		translate_Args(node->child[2]);
-        Operand * op = translate_Exp(node->child[0], OP_TEMP);
-		linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
-		return NULL;
+		Operand * op = translate_Exp(node->child[0], OP_TEMP);
+		if(op->kind == OP_REF)
+		{
+			linkIRCode(createIRCodeNode(IR_ARG_REF),op,NULL,NULL,NULL);
+		}
+		else
+		{
+			linkIRCode(createIRCodeNode(IR_ARG),op,NULL,NULL,NULL);
+		}
+		return op;
 	}
 }
 Operand * translate_Args_write(Node * node) {
@@ -897,6 +911,9 @@ void printLine(FILE * out, IRCode * current) {
                 case IR_ARG :
                         fprintf(out, " ARG %s \n", current->result->symbolName);
                         break;
+				case IR_ARG_REF:
+                        fprintf(out, " ARG *%s \n", current->result->symbolName);
+						break;
 
 		// case about assign operation
                 case IR_ASSIGN :
