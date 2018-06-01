@@ -1,4 +1,5 @@
 #include "interCode.h"
+#include "symbolTable.h"
 #include "common.h"
 #include "debug.h"
 
@@ -227,6 +228,7 @@ void translate_Tag(Node * node) {
 
 
 
+int getTypeSize(Type_);
 // VarDec : ID
 //    | VarDec LB INT RB
 char * translate_VarDec(Node * node, BOOL isParam) {
@@ -264,13 +266,13 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 	}
 	// Array, one dimension 
 	else {
-		char * name = translate_VarDec(node->child[0], FALSE);
+		//char * name = translate_VarDec(node->child[0], FALSE);
 		// not one dimension, there need to print error info.
-		if(name == NULL) {
-			fprintf(stderr, "Hypothesis 2: there should not exist high dimension array.\n");
-			IRError = TRUE;
-			return NULL;
-		}		
+		//if(name == NULL) {
+		//	fprintf(stderr, "Hypothesis 2: there should not exist high dimension array.\n");
+		//	IRError = TRUE;
+		//	return NULL;
+		//}		
 		if(isParam == TRUE) {
  			char * newname = malloc(BUFFERSIZE);
                         sprintf(newname, "v%d", definedVarCount++);
@@ -281,10 +283,21 @@ char * translate_VarDec(Node * node, BOOL isParam) {
 		} 
 		// local defination , DEC array size
 		else {
+			//add vartable
+			Type_ newArray;
+			newArray.kind = ARRAY;
+			newArray.u.array.size = node->child[2]->intval;
+			newArray.u.array.elem = malloc(sizeof(struct Type_));
+			*newArray.u.array.elem = node->inhtype;
+
+			addirTable(node->child[0]->child[0]->idval,newArray);
+
+			int basicsize = getTypeSize(node->inhtype);
+
 			char * Sintval = malloc(BUFFERSIZE);
-			sprintf(Sintval, "%d", 4*node->child[2]->intval);
+			sprintf(Sintval, "%d", basicsize*node->child[2]->intval);
 			Operand * size = createOperand(OP_CONSTANT, Sintval);
-			Operand * arr = createOperand(OP_REF, name);
+			Operand * arr = createOperand(OP_REF, node->child[0]->child[0]->idval);
 			IRCode * ircode = createIRCodeNode(IR_DEC);
 			linkIRCode(ircode, arr, size, NULL, NULL);
 		}
@@ -700,7 +713,20 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				}
 				else
 				{
-					fprintf(stderr,"linenum:%d ,Exp DOT need todo\n",node->linenum);
+					Operand * basic = translate_Exp(node->child[0],OP_TEMP); 
+					
+					char *fieldName = node->child[2]->idval;
+					fprintf(stderr,"tp3:%s\n",fieldName);
+					char *offs = getFieldOffset(&node->child[0]->inhtype,fieldName);
+					displayType(node->child[0]->inhtype);
+					Operand *offset = createOperand(OP_CONSTANT,offs);
+					char *rname = malloc(BUFFERSIZE);
+					Operand *re = createOperand(OP_TEMP,rname);
+					linkIRCode(createIRCodeNode(IR_ADD),re,basic,offset,NULL);
+					
+					re->kind = OP_REF;
+					return re;
+					//fprintf(stderr,"linenum:%d ,Exp DOT need todo\n",node->linenum);
 				}
 			}
 			// ASSIGN
@@ -817,7 +843,37 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				Operand *offset = createOperand(OP_TEMP,ofname);
 
 				//getTypeSize()
-				linkIRCode(createIRCodeNode(IR_MUL),offset,index,createOperand(OP_CONSTANT,"#4"),NULL);
+
+				if(strcmp(node->child[0]->child[0]->strval,"ID")==0)
+				{
+					char *id = node->child[0]->child[0]->idval;
+					Type vartype = getVarType(id);
+					if(vartype != NULL)
+						node->inhtype = *(vartype->u.array.elem);
+					else
+					{
+						node->inhtype.kind = BASIC;
+						fprintf(stderr,"vartype NULL\n");
+					}
+				}
+				else
+				{
+					fprintf(stderr,"hign demension array occur\n");
+				}
+				
+				char *id = node->child[0]->child[0]->idval;
+				Type vartype = getVarType(id);
+				char * vsize = malloc(BUFFERSIZE);
+				if(vartype == NULL)
+				{
+					sprintf(vsize,"#%d",4);
+				}
+				else
+				{
+					int s1 = getTypeSize(node->inhtype);
+					sprintf(vsize,"#%d",s1);
+				}
+				linkIRCode(createIRCodeNode(IR_MUL),offset,index,createOperand(OP_CONSTANT,vsize),NULL);
 				linkIRCode(createIRCodeNode(IR_REF),re,base,offset,NULL);
 				re->kind = OP_REF;
 				return re;

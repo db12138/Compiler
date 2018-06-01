@@ -226,7 +226,8 @@ int getArraySize(Type_ ar)
 	}
 	else
 	{
-		return 0;
+		
+		return getStructSize(ar);
 	}
 }
 int getStructSize(Type_ st)
