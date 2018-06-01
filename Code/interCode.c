@@ -694,6 +694,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					char *varname = node->child[0]->child[0]->idval;
 					Operand *base = createOperand(OP_VARIABLE,varname);
 					Type vtype = getVarType(varname);
+					//fprintf(stderr,"%s\n",varname);
 					if(vtype == NULL)
 					{
 						fprintf(stderr,"should not happen,%s,%d\n",__FILE__,__LINE__);
@@ -870,6 +871,8 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				else if(node->child[0]->inhtype.kind == ARRAY)
 				{
 					//struct ARRAY
+
+					node->inhtype = *(node->child[0]->inhtype.u.array.elem);
 				}
 				else
 				{
