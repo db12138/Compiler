@@ -707,7 +707,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 				IRCode * irAssign = NULL;
 				Operand * operandL = createOperand(OP_TEMP, "");
 				operandL = translate_Exp(node->child[0], OP_TEMP);
-				//printf("left operand end , %s\n", operandL->symbolName);
+				fprintf(stderr,"left operand end , %s\n", operandL->symbolName);
 				switch(operandL->kind) {
 					case OP_VARIABLE:
 					case OP_TEMP:{	
@@ -802,8 +802,24 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					linkIRCode(createIRCodeNode(IR_CALL), temp, opfunc, NULL, NULL);
 				}
 			}
+			//Exp -> Exp LB Exp RB
 			else if(strcmp(node->child[0]->strval, "Exp") == 0) {
-				Operand * baseArr = createOperand(OP_TEMP, "");
+				char *rename = malloc(BUFFERSIZE); 
+				Operand *re = createOperand(OP_TEMP,rename);
+				
+				Operand *base = translate_Exp(node->child[0],OP_TEMP);
+				Operand *index = translate_Exp(node->child[2],OP_TEMP);
+
+				char *ofname = malloc(BUFFERSIZE);
+				Operand *offset = createOperand(OP_TEMP,ofname);
+
+				//getTypeSize()
+				linkIRCode(createIRCodeNode(IR_MUL),offset,index,createOperand(OP_CONSTANT,"#4"),NULL);
+				linkIRCode(createIRCodeNode(IR_REF),re,base,offset,NULL);
+				re->kind = OP_REF;
+				fprintf(stderr,"stp1 %s\n",re->symbolName);
+				return re;
+				/*Operand * baseArr = createOperand(OP_TEMP, "");
 				baseArr = translate_Exp(node->child[0], OP_TEMP);
 				Operand * index = createOperand(OP_TEMP, "");
 				index = translate_Exp(node->child[2], OP_TEMP);
@@ -820,7 +836,7 @@ Operand * translate_Exp(Node * node, OperandKind kind) {
 					tempRef->kind = OP_REF;
 					linkIRCode(createIRCodeNode(IR_ADD), tempRef, baseArr, offset, "+");
 					linkIRCode(createIRCodeNode(IR_DEREF_R), temp, tempRef, NULL, NULL);
-				}
+				}*/
 			}
 			break;
 	}	
